@@ -1,7 +1,6 @@
 (ns om-tutorial.core
   (:require [goog.dom :as gdom]
             [om.next :as om :refer-macros [defui]]
-            [om-tutorial.nested-query]
             [om.dom :as dom]))
 
 (enable-console-print!)
