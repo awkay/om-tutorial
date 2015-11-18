@@ -30,7 +30,7 @@
                            (dom/ul nil (map person people))
                             ;IMPORTANT: THIS IS NOT A REAL ADD...SIMULATE AN ADD to the server. It will look like it works ONCE
                            (dom/button #js {:onClick #(om/transact! this `[(app/add-person) :people (quote ~(cljs.core/first (om/get-query this)))])} "Add Person")
-                            ;IMPORTANT: THIS IS NOT A REAL ADD...SIMULATE a DELETE...ONLLY WORKS IF YOU'VE DONE the Add, since it is faking it!!!
+                            ;IMPORTANT: THIS IS NOT A REAL DELETE...SIMULATE a DELETE...ONLY WORKS IF YOU'VE DONE the Add already, since it is faking removing the one you added
                            (dom/button #js {:onClick #(om/transact! this '[(app/delete-person) :people])} "Delete Person")
                            ))
                  )
@@ -45,7 +45,7 @@
 (defmethod mutate 'app/add-person [{:keys [state] :as env} k p]
   {
    :remote true
-   ; Action here is an optimistic update
+   ; Action here is an optimistic update. If you have send in "deny add" simulation mode, you'll temporarily see the change
    :action (fn []
              ;; I can play with normalized tables, or use db->tree and tree->db.
              (swap! state update-in [:db/id] assoc 3 {:db/id 3 :person/name "Joey"})
@@ -53,9 +53,13 @@
              )
    })
 (defmethod mutate 'app/delete-person [{:keys [state] :as env} k {:keys [db/id]}]
-  {:remote true})
+  {:remote true
+   :action (fn [] (swap! state update-in [:people] butlast) ) ; optimistic delete...always denied by server unless "Joey"
+   })
 
 (def initial-state {:people [{:db/id 1 :person/name "Sam"} {:db/id 2 :person/name "Tammy"}]})
+
+; These are the fake data responses I'm simulating from the server.
 
 ; PRETEND thing that the server returns if add is OK
 (def pretend-added-person-state {:people [{:db/id 1 :person/name "Sam"} {:db/id 2 :person/name "Tammy"} {:db/id 3 :person/name "Joey"}]})
@@ -74,6 +78,7 @@
                                               (let [people-read-response pretend-deleted-person-state] (cb people-read-response)) ; simulate add denied
                                               (let [people-read-response pretend-deleted-person-state]
                                                 (println "DELETE") ; delete
+                                                ; call the callback, which will SIMULATE what I get back from the server (e.g. the original list)
                                                 (cb people-read-response)) ; delete
                                               ) 1000)
                                           )}))
