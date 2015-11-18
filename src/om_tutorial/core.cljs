@@ -53,7 +53,7 @@
    })
 (defmethod mutate 'app/delete-person [{:keys [state] :as env} k {:keys [db/id]}]
   {:remote true
-   :action (fn [] (swap! state update-in [:people] butlast)) ; optimistic delete...always denied by server unless "Joey"
+   :action (fn [] (swap! state update-in [:people] butlast)) ; optimistic delete...always denied by server unless "Joey" was added
    })
 
 (def initial-state {:people [{:db/id 1 :person/name "Sam"} {:db/id 2 :person/name "Tammy"}]})
