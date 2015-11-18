@@ -2,7 +2,7 @@
          '[figwheel-sidecar.repl-api :as ra])
 
 (ra/start-figwheel!
-  {:figwheel-options {}
+  {:figwheel-options { :server-port 3050}
    :build-ids ["dev"]
    :all-builds
    [{:id "dev"
