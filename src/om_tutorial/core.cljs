@@ -76,12 +76,12 @@
                                                         add-allowed? true] ; change to alter simulation of server being ok with add
                                                     (if is-add?
                                                       (if add-allowed?
-                                                        (let [people-read-response pretend-added-person-state] (cb people-read-response)) ; simulate add ok
-                                                        (let [people-read-response pretend-deleted-person-state] (cb people-read-response))) ; simulate add denied
-                                                      (let [people-read-response pretend-deleted-person-state]
+                                                        (cb pretend-added-person-state) ; simulate add ok
+                                                        (cb pretend-deleted-person-state)) ; simulate add denied
+                                                      (do
                                                         (println "DELETE") ; delete
                                                         ; call the callback, which will SIMULATE what I get back from the server (e.g. the original list)
-                                                        (cb people-read-response)) ; delete
+                                                        (cb pretend-deleted-person-state)) ; delete
                                                       ))) 1000)
                                               )}))
 
