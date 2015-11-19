@@ -46,16 +46,17 @@
   "Terminate the descent of the parse and indicate the rest of the sub-query should run against the target indicated
   by the environment *if* the given key in the current app-state node is missing, nil, or `:missing`. 
   
-  NOTE: If the *query* has a target on the AST (which indicates a forced read) then this function will always honor that
-  and run the remote fetch.
+  NOTE: If the *query* has a target on the AST (which indicates a forced read via a quote on the keyword) then this 
+  function will always honor that and include the element in the remote fetch query.
    
-  The as-root? parameter indicates that the sub-query should be sent to the
+  If the as-root? parameter is `true` or `:make-root`, then it indicates that the sub-query should be sent to the
   server as a root query, without any of the prior recursion's query prefix. If you use it, then you will also need
-  to `process-roots` in your send method.
+  to `process-roots` in your send method. Any other value can be used to indicate it is not a root.
   "
   [{:keys [node target ast] :as env} key as-root?]
   (let [cached-read-ok? (not (= target (:target ast)))
         value (get node key)
+        as-root? (or (true? as-root?) (= :make-root as-root?))
         ]
     (if (and cached-read-ok? (contains? node key) (not= nil value) (not= :missing value))
       nil

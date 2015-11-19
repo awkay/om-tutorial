@@ -5,7 +5,7 @@
             [om-tutorial.ui :as ui]
             [om-tutorial.client-mutation :as m]
             [om-tutorial.local-read :as local]
-            [om-tutorial.remote-fetch :as remote]
+            [om-tutorial.client-remoting :as remote]
             [om-tutorial.simulated-server :as server]
             [om.dom :as dom]))
 
@@ -18,8 +18,9 @@
 
 (def reconciler (om/reconciler {:state   initial-state
                                 :parser  parser
+                                :merge-tree local/merge-tree
                                 :remotes [:my-server]
-                                :send    server/send}))
+                                :send    remote/send}))
 
 (om/add-root! reconciler ui/Root (gdom/getElement "app"))
 

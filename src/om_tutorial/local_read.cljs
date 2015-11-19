@@ -1,5 +1,6 @@
 (ns om-tutorial.local-read
-  (:require [om-tutorial.parsing :as p]))
+  (:require [om-tutorial.parsing :as p]
+            [om.next :as om]))
 
 (defn read-widget
   [{:keys [query state parser] :as env} key params]
@@ -21,6 +22,16 @@
     :widget {:value (p/parse-with-reader read-widget env key)}
     (do (println key " NOT FOUND")
         {:value :not-found})
+    )
+  )
+
+(defn merge-tree [state result]
+  (println "Asked to merge tree " result " into " state)
+  (let [ppl (-> result :widget :people)]
+    (cond-> state
+            ppl (assoc :people ppl)
+            :always (om/default-merge-tree result)
+            )
     )
   )
 
