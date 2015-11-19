@@ -1,5 +1,21 @@
 (ns om-tutorial.parsing)
 
+(defn new-read-entry-point
+  "Create a new read entry point that allows you to switch read functions during a local parse, and can
+  be configured with an alternate reader for each remote.
+  
+  The remote-read-map should be a map keyed by remote name, whose values are read functions 
+  (e.g. `{:remote (fn [e k p] ...)}`)
+  "
+  [default-local-read remote-read-map]
+  (fn [{:keys [target reader] :as env} key params]
+    (cond
+      reader (reader env key params)
+      (contains? remote-read-map target) ((get remote-read-map target) env key params)
+      :else (default-local-read env key params)
+      )))
+
+
 (defn parse-with-reader
   "Cause this parse to recursively descend, but switch to using the named reader function. 
   

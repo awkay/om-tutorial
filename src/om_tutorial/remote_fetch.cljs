@@ -10,6 +10,6 @@
   (case key
     :widget (p/recurse-remote env key)
     :people (p/fetch-if-missing env key true)
-    :not-remote
+    :not-remote ; prune everything else from the parse
     )
   )
