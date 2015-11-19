@@ -19,7 +19,7 @@
   (case key
     :last-error {:value (get @state key)}
     :new-person {:value (get @state key)}
-    :widget {:value (p/parse-with-reader read-widget env key)}
+    :widget {:value (p/parse-with-reader read-widget env key false)}
     (do (println key " NOT FOUND")
         {:value :not-found})
     )

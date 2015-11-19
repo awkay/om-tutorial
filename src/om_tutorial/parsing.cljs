@@ -8,13 +8,20 @@
   (e.g. `{:remote (fn [e k p] ...)}`)
   "
   [default-local-read remote-read-map]
-  (fn [{:keys [target reader] :as env} key params]
-    (cond
-      reader (reader env key params)
-      (contains? remote-read-map target) ((get remote-read-map target) env key params)
-      :else (default-local-read env key params)
-      )))
+  (fn [{:keys [target state reader] :as env} key params]
+    (let [env' (if (:node env) env (assoc env :node @state))]
+      (cond
+        reader (reader env' key params)
+        (contains? remote-read-map target) ((get remote-read-map target) env' key params)
+        :else (default-local-read env' key params)
+        ))))
 
+(defn descend
+  "Recursively descend the state database (moves :node in the env to the child with the given key in the current node (which originally
+  starts at app-state root). Basically, walk into the app state. Assumes the shape of the state at the present node mimics
+  the UI tree at that key.
+  "
+  [{:keys [node] :as env} key] (assoc env :node (get node key)))
 
 (defn parse-with-reader
   "Cause this parse to recursively descend, but switch to using the named reader function. 
@@ -22,9 +29,27 @@
   `reader`: The reader function to start calling from parser
   `env`:The current parse environment
   `key`:The key just hit
+  `descend?` : A truthy value (e.g. :descend). Should this function move env :node into the UI state at the given key?
   "
-  [reader {:keys [parser query] :as env} key]
-  (let [env' (assoc env :reader reader)] (parser env' query)))
+  [reader {:keys [parser query] :as env} key descend?]
+  (let [env' (cond-> (assoc env :reader reader)
+                     descend? (descend key)
+                     )]
+    (parser env' query)))
+
+(defn parse-many-with-reader
+  "
+  "
+  [reader {:keys [parser node query] :as env} key]
+  (let [items (get node key)
+        env' (-> env
+                 (assoc :reader reader)
+                 (dissoc :query))
+        ]
+    (when (or (nil? items) (= :missing items) (vector? items)) "Parsing expected a vector, but found none.")
+    (mapv #(parser (assoc env' :node %) query) items)
+    )
+  )
 
 (defn elide-empty-response
   "Prevent a remote request if the response from a sub-parser is empty."
@@ -53,12 +78,12 @@
   server as a root query, without any of the prior recursion's query prefix. If you use it, then you will also need
   to `process-roots` in your send method. Any other value can be used to indicate it is not a root.
   "
-  [{:keys [node target ast] :as env} key as-root?]
+  [{:keys [state target ast] :as env} key as-root?]
   (let [cached-read-ok? (not (= target (:target ast)))
-        value (get node key)
+        value (get @state key)
         as-root? (or (true? as-root?) (= :make-root as-root?))
         ]
-    (if (and cached-read-ok? (contains? node key) (not= nil value) (not= :missing value))
+    (if (and cached-read-ok? (contains? @state key) (not= nil value) (not= :missing value))
       nil
       {target
        (cond-> ast
