@@ -1,4 +1,4 @@
-(ns om-tutorial.C-Queries
+(ns om-tutorial.Z-Glossary
   (:require-macros
     [cljs.test :refer [is]]
     )
@@ -8,7 +8,7 @@
             ))
 
 (defcard-doc
-  "
-  # Queries
-  ")
+  "# Glossary of Terms
   
+  
+  ")

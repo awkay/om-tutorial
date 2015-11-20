@@ -36,4 +36,9 @@
   - Dynamically changing Queries
   
   Let's start with the [UI](#!/om_tutorial.B_UI).
+  
+  ## Notes on documentation:
+  
+  I'm using devcards to render a lot of source from actual code; Unfortunately devcards cannot handle reader tags, 
+  so I apologize about the use of `clj->js`... Note that you'd normally write `#js { :onClick ...}` instead.
   ")

@@ -8,6 +8,7 @@
             [om-tutorial.A-Introduction]
             [om-tutorial.B-UI]
             [om-tutorial.C-Queries]
+            [om-tutorial.Z-Glossary]
             [om-tutorial.parsing :as p]
             [om-tutorial.core :as core]
             [om-tutorial.ui :as ui]

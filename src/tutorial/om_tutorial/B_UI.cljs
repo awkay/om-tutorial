@@ -127,6 +127,22 @@
 
 (defcard root-render (root {:number 52 :people [{:name "Sam"} {:name "Joe"}]}))
 
+(defui Root-computed
+       Object
+       (render [this]
+               (let [{:keys [people number b]} (om/props this)
+                     {:keys [incHandler boolHandler]} (om/get-computed this)]
+                 (dom/div nil
+                          ; devcards cannot deal with #js on rendering source. Using clj->js instead
+                          (dom/button (clj->js {:onClick #(boolHandler)}) "Toggle Luck")
+                          (dom/button (clj->js {:onClick #(incHandler)}) "Increment Number")
+                          (dom/span nil (str "My " (if b "" "un") "lucky number is " number
+                                             " and I have the following friends:"))
+                          (people-list people))
+                 )))
+
+(def root-computed (om/factory Root-computed))
+
 (defcard-doc
   "
   ## Out-of-band Data
@@ -140,4 +156,37 @@
   Instead Om has helper functions for hanging this computed information in a side-band channel of props. So, in the
   example below you'll see that a callback is being passed via `om/computed` and `om/get-computed`. The 
   former attaches the extra bits to the props, and the latter pulls them out.
-  ")
+  
+  Sorry about the use of `clj->js`...devcards can't currently render the source of something with reader tags in it. Note
+  that you'd normally write `#js { :onClick ...}`.
+  
+  "
+  (dc/mkdn-pprint-source Root-computed)
+  (dc/mkdn-pprint-source root-computed)
+
+  "The resulting card (with modifiable state) looks like this:
+  ```
+  (defcard passing-callbacks-via-computed
+         (fn [data-atom-from-devcards _]
+           (let [prop-data @data-atom-from-devcards
+                 sideband-data {:incHandler  (fn [] (swap! data-atom-from-devcards update-in [:number] inc))
+                                :boolHandler (fn [] (swap! data-atom-from-devcards update-in [:b] not))}
+                 ]
+             (root-computed (om/computed prop-data sideband-data)))
+           )
+         {:number 42 :people [{:name \"Sally\"}] :b false}
+         {:inspect-data true})
+  ```
+  "
+  )
+
+(defcard passing-callbacks-via-computed
+         (fn [data-atom-from-devcards _]
+           (let [prop-data @data-atom-from-devcards
+                 sideband-data {:incHandler  (fn [] (swap! data-atom-from-devcards update-in [:number] inc))
+                                :boolHandler (fn [] (swap! data-atom-from-devcards update-in [:b] not))}
+                 ]
+             (root-computed (om/computed prop-data sideband-data)))
+           )
+         {:number 42 :people [{:name "Sally"}] :b false}
+         {:inspect-data true})
