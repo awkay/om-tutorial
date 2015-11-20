@@ -20,7 +20,7 @@
 ;"Add a person. Does this locally only, with temporary IDs. These are persisted on save."
 (defmethod mutate 'app/add-person
   [{:keys [state ast] :as env} k {:keys [name]}]
-  {
+  { 
    :action (fn []
              ;; I can play with normalized tables, or use db->tree and tree->db.
              (let [temp-id (om/tempid)

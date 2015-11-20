@@ -5,7 +5,7 @@
 
 (defui Person
        static om/IQuery
-       (query [this] [:db/id :person/name])
+       (query [this] '[:db/id :person/name {:person/mate ...}])
        static om/Ident
        (ident [this {:keys [db/id]}] [:db/id id])
 

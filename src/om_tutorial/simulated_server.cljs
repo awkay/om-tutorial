@@ -12,8 +12,9 @@
 
 (defmulti server-mutate om/dispatch)
 
-(defmethod server-mutate 'app/add-person [{:keys [state ast] :as env} k {:keys [name]}]
+(defmethod server-mutate 'app/add-person [{:keys [db state ast] :as env} k {:keys [name]}]
   {
+   :tempids { [:db/id tmpid] [:db/id 4]}
    ; Action here is a thunk, because parse MUST be side-effect free.
    :action (fn []
              ; TODO: Server add

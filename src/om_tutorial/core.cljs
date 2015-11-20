@@ -11,17 +11,28 @@
 
 (enable-console-print!)
 
-(def initial-state {:last-error "" :new-person "" :people :missing})
+(def initial-state {:last-error "" :new-person ""
+                    :widget     {
+                                 :people
+                                 [{:db/id 1 :person/name "Tony" :person/mate {:db/id 2 :person/name "Jane"}}
+                                  {:db/id 2 :person/name "Jane" :person/mate {:db/id 1 :person/name "Tony"}}]
+                                 }
+                    })
 
-(def parser (om/parser {:read (p/new-read-entry-point local/read-local {:my-server remote/read-remote}) 
+(def parser (om/parser {:read   (p/new-read-entry-point local/read-local {:my-server remote/read-remote})
                         :mutate m/mutate}))
 
-(def reconciler (om/reconciler {:state   initial-state
-                                :parser  parser
+(def reconciler (om/reconciler {:state      initial-state
+                                :parser     parser
                                 :merge-tree local/merge-tree
-                                :remotes [:my-server]
-                                :send    remote/send}))
+                                :remotes    [:my-server]
+                                :send       remote/send}))
 
 (om/add-root! reconciler ui/Root (gdom/getElement "app"))
 
+(comment
+  (do
+    (def normalized-state (om/tree->db ui/Root initial-state true))
+    (parser {:state (atom normalized-state)} (om/get-query ui/Root)))
+  )
 

@@ -10,7 +10,7 @@
   "
   [env key params]
   (case key
-    :widget (p/recurse-remote env key)
+    :widget (p/recurse-remote env key true)
     :people (p/fetch-if-missing env key :make-root)
     :not-remote ; prune everything else from the parse
     )
