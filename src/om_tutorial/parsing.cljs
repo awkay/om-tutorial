@@ -84,8 +84,11 @@
   
   Since your data might contain ref loops, the default recursion limit is 20. Use `:limit n` as 
   an additional named parameter to limit the depth of the recursion to `n`.
+  
+  Using the additional `:reset-depth n` can be used to re-root the depth at the current join. Be careful
+  not to reset the join in a recursion such that it will go forever!
   "
-  [reader {:keys [db-path parser depth query] :or {depth 0} :as env} key & {:keys [limit] :or {limit 20}}]
+  [reader {:keys [db-path parser depth query] :or {depth 0} :as env} key & {:keys [limit reset-depth] :or {limit 20 reset-depth false}}]
   (println "Join " query " at " db-path)
   (if (>= depth limit)
     (do
@@ -97,7 +100,7 @@
           env' (cond-> env
                        to-many? (descend key)
                        to-one? (descend key)
-                       :always (assoc :depth (inc depth) :reader reader)
+                       :always (assoc :depth (or reset-depth (inc depth)) :reader reader)
                        :always (dissoc :query))
           ]
       (println "to-many? " to-many? " k:" key " query:" query " i:" items)
