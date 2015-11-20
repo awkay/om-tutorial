@@ -5,15 +5,21 @@
 
 (defui Person
        static om/IQuery
-       (query [this] '[:db/id :person/name {:person/mate ...}])
+       (query [this] '[:ui/checked :db/id :person/name {:person/mate ...}])
        static om/Ident
        (ident [this {:keys [db/id]}] [:db/id id])
 
        Object
        (render [this]
-               (let [{:keys [db/id person/name]} (om/props this)
+               (let [{:keys [ui/checked db/id person/name]} (om/props this)
                      {:keys [onDelete]} (om/get-computed this)]
-                 (dom/li nil name (dom/button #js {:onClick #(when onDelete (onDelete id))} "X")))))
+                 (dom/li nil 
+                         (dom/input #js {:type "checkbox" 
+                                         :onClick #(om/transact! this `[(app/toggle-ui-boolean {:attr :ui/checked
+                                                                                                :ref [:db/id ~id]})])
+                                         :checked (boolean checked)})
+                         name 
+                         (dom/button #js {:onClick #(when onDelete (onDelete id))} "X")))))
 
 (def person (om/factory Person {:keyfn :db/id}))
 
@@ -29,7 +35,7 @@
                             (dom/span nil "Loading...")
                             (dom/div nil
                                      (dom/button #js {:onClick #(om/transact! this '[(app/save)])} "Save")
-                                     (dom/button #js {:onClick #(om/transact! this '[(app/refresh)])} "Refresh List")
+                                     (dom/button #js {:onClick #(om/transact! this '[(app/refresh) :people])} "Refresh List")
                                      (dom/ul nil (map #(person (om/computed % {:onDelete deletePerson})) people))))
                           )
                  )

@@ -25,6 +25,9 @@
   [env key]
   (update-in env [:db-path] conj key))
 
+(defn ascend [env]
+  (update-in env [:db-path] butlast))
+
 (defn parse-with-reader
   "Cause this parse to recursively descend, but switch to using the named reader function. 
   
@@ -96,11 +99,10 @@
     (let [items (dbget env key)
           to-many? (vector? items)
           to-one? (map? items)
-          env' (cond-> env
-                       to-many? (descend key)
-                       to-one? (descend key)
-                       :always (assoc :depth (or reset-depth (inc depth)) :reader reader)
-                       :always (dissoc :query))
+          env' (-> env
+                   (descend key)
+                   (assoc :depth (or reset-depth (inc depth)) :reader reader)
+                   (dissoc :query))
           ]
       (cond
         to-many? (into [] (map-indexed (fn [idx _] (parser (descend env' idx) query)) items))
@@ -108,6 +110,29 @@
         :else :missing
         )
       )))
+
+(defn ref-at-db-path [{:keys [db-path state] :as env}]
+  (loop [node @state path db-path]
+    (let [k (first path)
+          v (get node k)
+          v' (follow-ref env (get node k))]
+      (if (= 1 (count path))
+        (if (om/ref? v) v nil)
+        (recur v' (rest path))
+        ))))
+
+(defn ui-key [ref]
+  (let [[persistent-key id] ref]
+        [(keyword (str "ui." (namespace persistent-key)) "id") id]
+  ))
+
+(defn ui-attribute [{:keys [state] :as env} key]
+  (if-let [ref (ref-at-db-path env)]
+    (let [uikey (ui-key ref)
+          node (get-in @state uikey)
+          value (get node key)]
+      (if value {:value value} nil)
+    )))
 
 (defn elide-empty-query
   "Helper method to prevent a remote request if the sub-parser response is empty.

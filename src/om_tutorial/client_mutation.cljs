@@ -1,5 +1,7 @@
 (ns om-tutorial.client-mutation
-  (:require [om.next :as om]))
+  (:require
+    [om-tutorial.parsing :as p]
+    [om.next :as om]))
 
 (defmulti mutate om/dispatch)
 
@@ -13,14 +15,14 @@
 (defmethod mutate 'app/refresh
   [{:keys [state ast] :as env} k {:keys [name]}]
   {:action (fn []
-             (swap! state assoc :people :missing)
+             (swap! state update-in [:widget :people] :missing)
              )}
   )
 
 ;"Add a person. Does this locally only, with temporary IDs. These are persisted on save."
 (defmethod mutate 'app/add-person
   [{:keys [state ast] :as env} k {:keys [name]}]
-  { 
+  {
    :action (fn []
              ;; I can play with normalized tables, or use db->tree and tree->db.
              (let [temp-id (om/tempid)
@@ -31,7 +33,7 @@
                (println "Optimistic add " name " w/tempid " temp-id)
                (swap! state assoc :new-person "")
                (swap! state update-in [:db/id] assoc temp-id {:db/id temp-id :person/name name})
-               (swap! state update-in [:people] create-or-conj [:db/id temp-id]))
+               (swap! state update-in [:widget :people] create-or-conj [:db/id temp-id]))
              )
    })
 
@@ -52,7 +54,18 @@ We can do several possible things to deal with server response:
   {:my-server ast
    :action    (fn []
                 (println "Optimistic delete of " id " " (remove-person id (-> @state :people)))
-                (swap! state update-in [:people] (partial remove-person id))
+                (swap! state update-in [:widget :people] (partial remove-person id))
                 )
    })
+
+#_"Handles a generalized bit of UI state that represents a UI boolean.
+Parameter should be the `ref` of the UI component that owns the boolean."
+(defmethod mutate 'app/toggle-ui-boolean
+  [{:keys [state ast] :as env} k {:keys [ref attr]}]
+  {:action (fn []
+             (let [path (conj (p/ui-key ref) attr)]
+               (println "path " path)
+               (swap! state update-in path not))
+             )}
+  )
 

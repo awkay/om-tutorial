@@ -12,17 +12,23 @@
 (enable-console-print!)
 
 (def initial-state {:last-error "" :new-person ""
-                    :widget     {:people :missing}
+                    :widget     {
+                                 :people [{:db/id 1 :person/name "Tony" :garbage 1 :person/mate {:db/id 2 :a 5 :person/name "Jane"}}
+                                          {:db/id 2 :person/name "Jane" :garbage 2 :person/mate {:db/id 1 :b 2 :person/name "Tony"}}]}
+                    :ui.db/id   {
+                                 1 {:ui.db/id 1 :ui/checked false}
+                                 2 {:ui.db/id 2 :ui/checked true}
+                                 }
                     })
 
 (def parser (om/parser {:read   (p/new-read-entry-point local/read-local {:my-server remote/read-remote})
                         :mutate m/mutate}))
 
-(def reconciler (om/reconciler {:state      initial-state
-                                :parser     parser
-                                :merge-tree local/merge-tree
-                                :remotes    [:my-server]
-                                :send       remote/send}))
+(def reconciler (om/reconciler {:state   initial-state
+                                :parser  parser
+                                ;:merge-tree local/merge-tree
+                                :remotes [:my-server]
+                                :send    remote/send}))
 
 (om/add-root! reconciler ui/Root (gdom/getElement "app"))
 
