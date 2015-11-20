@@ -35,7 +35,7 @@
   - Processing incoming responses to remote requests.
   - Dynamically changing Queries
   
-  Let's start with the [UI](#!/om_tutorial.B_UI).
+  [Let's start with the UI.](#!/om_tutorial.B_UI)
   
   ## Notes on documentation:
   
