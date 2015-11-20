@@ -12,11 +12,7 @@
 (enable-console-print!)
 
 (def initial-state {:last-error "" :new-person ""
-                    :widget     {
-                                 :people
-                                 [{:db/id 1 :person/name "Tony" :person/mate {:db/id 2 :person/name "Jane"}}
-                                  {:db/id 2 :person/name "Jane" :person/mate {:db/id 1 :person/name "Tony"}}]
-                                 }
+                    :widget     {:people :missing}
                     })
 
 (def parser (om/parser {:read   (p/new-read-entry-point local/read-local {:my-server remote/read-remote})

@@ -88,11 +88,10 @@
   Using the additional `:reset-depth n` can be used to re-root the depth at the current join. Be careful
   not to reset the join in a recursion such that it will go forever!
   "
-  [reader {:keys [db-path parser depth query] :or {depth 0} :as env} key & {:keys [limit reset-depth] :or {limit 20 reset-depth false}}]
-  (println "Join " query " at " db-path)
+  [reader {:keys [parser depth query] :or {depth 0} :as env} key & {:keys [limit reset-depth] :or {limit 20 reset-depth false}}]
   (if (>= depth limit)
     (do
-      (println "Recursion limit (" limit ")reached at depth " depth)
+      (println "Recursion limit (" limit ") reached.")
       nil)
     (let [items (dbget env key)
           to-many? (vector? items)
@@ -103,7 +102,6 @@
                        :always (assoc :depth (or reset-depth (inc depth)) :reader reader)
                        :always (dissoc :query))
           ]
-      (println "to-many? " to-many? " k:" key " query:" query " i:" items)
       (cond
         to-many? (into [] (map-indexed (fn [idx _] (parser (descend env' idx) query)) items))
         to-one? (parser env' query)
