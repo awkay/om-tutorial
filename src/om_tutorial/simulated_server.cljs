@@ -31,6 +31,7 @@
 
 (def server-parser (om/parser {:read server-read :mutate server-mutate}))
 
+; NOTE: LOTS TO DO STILL...error simulation, etc.
 (defn simulated-server
   "A function that simulates the action of the server. The parameter is the incoming data payload (in edn, as if transit was used),
   and the return value is what would be placed in the payload of the response.

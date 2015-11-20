@@ -15,11 +15,12 @@
                      {:keys [onDelete]} (om/get-computed this)]
                  (dom/li nil 
                          (dom/input #js {:type "checkbox" 
+                                         ;; Toggle a boolean UI attribute. Must supply the attribute and ref of this 
                                          :onClick #(om/transact! this `[(app/toggle-ui-boolean {:attr :ui/checked
                                                                                                 :ref [:db/id ~id]})])
                                          :checked (boolean checked)})
                          name 
-                         (dom/button #js {:onClick #(when onDelete (onDelete id))} "X")))))
+                         (when onDelete (dom/button #js {:onClick #(onDelete id)} "X"))))))
 
 (def person (om/factory Person {:keyfn :db/id}))
 
