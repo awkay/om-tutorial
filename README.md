@@ -210,4 +210,5 @@ re-renders of anything that has that Ident. In the example below, anything that 
 
 ## Devcard Tests!
 
-Devcards supports tests. When you run this example
+Devcards supports tests. When you run this example, just access the cards via the UI described at the beginning of this
+doc. Tests are live and hot-pushed on edit.
