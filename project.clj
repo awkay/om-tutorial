@@ -23,7 +23,7 @@
                                           :asset-path "js"
                                           :output-to  "resources/public/js/main.js"
                                           :output-dir "resources/public/js"
-                                          :verbose    true}}
+                                          :verbose    false}}
                           {:id           "cards"
                            :figwheel     {:devcards true}
                            :source-paths ["src/main" "src/cards"]
@@ -33,7 +33,7 @@
                                           :asset-path           "cards"
                                           :output-to            "resources/public/cards/cards.js"
                                           :output-dir           "resources/public/cards"
-                                          :verbose              true}}
+                                          :verbose              false}}
                           {:id           "tutorial"
                            :figwheel     {:devcards true}
                            :source-paths ["src/main" "src/tutorial"]
@@ -43,7 +43,7 @@
                                           :asset-path           "tutorial"
                                           :output-to            "resources/public/tutorial/tutorial.js"
                                           :output-dir           "resources/public/tutorial"
-                                          :verbose              true}}]}
+                                          :verbose              false}}]}
 
   :profiles {
              :dev {:source-paths ["src/dev"]
