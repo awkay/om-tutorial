@@ -20,6 +20,14 @@
 
 (def widget (om/factory Widget))
 
+(defui WidgetWithProperties
+       Object
+       (render [this]
+               (let [{:keys [name]} (om/props this)]
+                 (dom/div nil (str "Hello " name)))))
+
+(def prop-widget (om/factory WidgetWithProperties))
+
 
 (defcard-doc
   "
@@ -45,10 +53,23 @@
   (defcard widget-card (widget {}))
   ```
   "
-  (dc/mkdn-pprint-source widget-card)
-  "The resulting "
+  "The resulting card looks like this:"
   )
 
 (defcard widget-card
-         (widget {}))
+         (widget {})
+         )
 
+(defcard-doc
+  "You can send properties to such a stateless thing as a simple edn map, and pull them out of `this` using 
+  `om/props`."
+  (dc/mkdn-pprint-source WidgetWithProperties)
+  (dc/mkdn-pprint-source prop-widget)
+  "
+  ```
+  (defcard props-card (prop-widget {:name \"Sam\"}))
+  ```
+  "
+  )
+
+(defcard props-card (prop-widget {:name "Sam"}))
