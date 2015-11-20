@@ -33,21 +33,24 @@
   "
   # UI
   
-  Om uses React underneath. The primary mechanim for creating components is the `defui` macro:"
+  Om uses <a href=\"https://facebook.github.io/react/index.html\" target=\"_blank\">React</a> underneath.
+  The primary mechanim for creating components is the `defui` macro:"
   (dc/mkdn-pprint-source Widget)
   "This macro generates a React Class as a plain javascript class, so it is completely compatible with the
   React ecosystem."
-  "## React hooks
+  "## React Lifecycle Methods
   
-  If you wish to provide hook methods, you can define them under the Object section of the UI:"
+  If you wish to provide <a href=\"https://facebook.github.io/react/docs/component-specs.html#lifecycle-methods\"
+  target=\"_blank\">lifecycle methods</a>, you can define them under the Object section of the UI:"
   (dc/mkdn-pprint-source WidgetWithHook)
   "
   ## Element factory
   
-  You generate a factory for elements of this class with `om/factory`. This generates function that
+  You generate a factory for elements of this class with `om/factory`. This generates a function that
   acts like a new 'tag' for your DOM:"
   (dc/mkdn-pprint-source widget)
-  "and you can render these as plain React components in a devcard, which makes fine tuning them as pure UI dead simple:
+  "and you can render these as plain React components in a <a href=\"https://github.com/bhauman/devcards#devcards\"
+  target=\"_blank\">devcard</a>, which makes fine tuning them as pure UI dead simple:
   
   ```
   (defcard widget-card (widget {}))
@@ -120,8 +123,10 @@
   (defcard root-render (root {:number 52 :people [{:name \"Sam\"} {:name \"Joe\"}]}))
   ```
   
-  It is important to note that this is exactly how the composition and data passing always happens, independent of
-  whether or not you use the rest of the features of Om. Data is passed through props.
+  It is important to note that _this is exactly how the composition of UI Components always happens_, independent of
+  whether or not you use the rest of the features of Om. A root component calls the factory functions of subcomponents
+  with an edn map as the first argument. That map is accessed using `om/props` on `this` within the subcomponent. Data
+  is passed from component to component through `props`.
   "
   )
 
@@ -148,10 +153,10 @@
   ## Out-of-band Data
   
   In plain React, you pass stuff through props. In Om, props is meant to take a slightly different role: The properties
-  of the component that have to do with state. Particularly queried state. Because of internal requirements having to
-  do with efficient re-rendering (among others), you should not pass \"computed\" things (e.g. like callbacks) through
-  props (you can do so if it is a stateless component, but then you're going to confuse yourself, so let me lie to you
-  a little).
+  of the component that have to do with state. Particularly queried state, which we'll cover later.
+
+  Because of internal requirements having to do with efficient re-rendering (among others), you should not pass
+  \"computed\" things (e.g. callbacks) through props.
   
   Instead Om has helper functions for hanging this computed information in a side-band channel of props. So, in the
   example below you'll see that a callback is being passed via `om/computed` and `om/get-computed`. The 
@@ -159,8 +164,8 @@
   
   Sorry about the use of `clj->js`...devcards can't currently render the source of something with reader tags in it. Note
   that you'd normally write `#js { :onClick ...}`.
-  
   "
+
   (dc/mkdn-pprint-source Root-computed)
   (dc/mkdn-pprint-source root-computed)
 
