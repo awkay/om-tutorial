@@ -33,11 +33,16 @@ will need some minor plumbing to do the actual network bits).
 
 ## Running it
 
-There is a clojure script in the `script` folder. Simply run that in Cursive (Run..., Add a Clojure Local REPL, Run with Clojure Main, Argument `script/figwheel.clj`)
+There is a clojure script in the `script` folder. Simply run that in Cursive (Run..., Add a Clojure Local REPL, Run with Clojure Main)
 or at the command line with:
 
 ```
 lein run -m clojure.main
+```
+
+at that REPL, run:
+
+```
 user=> (start-dev)
 ```
 
