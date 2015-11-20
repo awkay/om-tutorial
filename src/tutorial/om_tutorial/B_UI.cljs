@@ -73,3 +73,71 @@
   )
 
 (defcard props-card (prop-widget {:name "Sam"}))
+
+(defui Person
+       Object
+       (render [this]
+               (let [{:keys [name]} (om/props this)]
+                 (dom/li nil name))))
+
+(def person (om/factory Person {:keyfn :name}))
+
+(defui PeopleList
+       Object
+       (render [this]
+               (let [people (om/props this)]
+                 (dom/ul nil (map person people))
+                 )))
+
+(def people-list (om/factory PeopleList))
+
+(defui Root
+       Object
+       (render [this]
+               (let [{:keys [people number]} (om/props this)]
+                 (dom/div nil
+                          (dom/span nil (str "My lucky number is " number " and I have the following friends:"))
+                          (people-list people))
+                 )))
+
+(def root (om/factory Root))
+
+(defcard-doc
+  "
+  ## Composing the UI
+  
+  Composing these is pretty straightforward: pull out the bits from props, and pass them on to subcomponents. 
+  "
+  (dc/mkdn-pprint-source Person)
+  (dc/mkdn-pprint-source PeopleList)
+  (dc/mkdn-pprint-source Root)
+  (dc/mkdn-pprint-source people-list)
+  (dc/mkdn-pprint-source person)
+  (dc/mkdn-pprint-source root)
+  "
+  
+  ```
+  (defcard root-render (root {:number 52 :people [{:name \"Sam\"} {:name \"Joe\"}]}))
+  ```
+  
+  It is important to note that this is exactly how the composition and data passing always happens, independent of
+  whether or not you use the rest of the features of Om. Data is passed through props.
+  "
+  )
+
+(defcard root-render (root {:number 52 :people [{:name "Sam"} {:name "Joe"}]}))
+
+(defcard-doc
+  "
+  ## Out-of-band Data
+  
+  In plain React, you pass stuff through props. In Om, props is meant to take a slightly different role: The properties
+  of the component that have to do with state. Particularly queried state. Because of internal requirements having to
+  do with efficient re-rendering (among others), you should not pass \"computed\" things (e.g. like callbacks) through
+  props (you can do so if it is a stateless component, but then you're going to confuse yourself, so let me lie to you
+  a little).
+  
+  Instead Om has helper functions for hanging this computed information in a side-band channel of props. So, in the
+  example below you'll see that a callback is being passed via `om/computed` and `om/get-computed`. The 
+  former attaches the extra bits to the props, and the latter pulls them out.
+  ")
