@@ -14,7 +14,7 @@
 
 (defmethod server-mutate 'app/add-person [{:keys [db state ast] :as env} k {:keys [name]}]
   {
-   :tempids { [:db/id tmpid] [:db/id 4]}
+   ; TODO: :tempids { [:db/id tmpid] [:db/id 4]}
    ; Action here is a thunk, because parse MUST be side-effect free.
    :action (fn []
              ; TODO: Server add
@@ -31,7 +31,7 @@
 
 (def server-parser (om/parser {:read server-read :mutate server-mutate}))
 
-; NOTE: LOTS TO DO STILL...error simulation, etc.
+; NOTE: LOTS TO DO STILL...ops, error simulation, etc.
 (defn simulated-server
   "A function that simulates the action of the server. The parameter is the incoming data payload (in edn, as if transit was used),
   and the return value is what would be placed in the payload of the response.
