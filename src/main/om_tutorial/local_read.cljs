@@ -44,6 +44,6 @@
   "A version of read-local that splits the responsibilities among other functions."
   [env key params]
   (case key
-    :widget {:value (p/parse-join-with-reader read-local env key :reset-depth 0)}
+    :widget {:value (p/parse-join-with-reader split-read-widget env key :reset-depth 0)}
     (p/db-value env key)
     ))
