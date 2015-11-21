@@ -182,6 +182,15 @@
          {:number 42 :people [{:name \"Sally\"}] :b false}
          {:inspect-data true})
   ```
+
+  ## Important Notes and Further Reading
+
+  - Use plain cljs data structures as input to your own Elements
+  - Extract properties with `om/props`. The is the same for stateful (with queries) or stateless components.
+  - Add parent-generated things (like callbacks) using `om/computed`.
+  - Remember to use `#js` (instead of `clj->js`) to transform attribute maps for passing to DOM elements
+
+  TODO: Add links to various docs
   "
   )
 
