@@ -25,7 +25,7 @@
 (defn descend
   "Recursively descend the state database (moves :node in the env to the child with the given key in the current node (which originally
   starts at app-state root). Basically, walk into the app state. Assumes the shape of the state at the present node mimics
-  the UI tree at that key.
+  the (stateful) UI tree at that key.
   "
   [env key]
   (update-in env [:db-path] conj key))
