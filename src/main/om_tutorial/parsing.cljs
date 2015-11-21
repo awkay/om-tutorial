@@ -144,8 +144,7 @@
         ))))
 
 (defn ui-key 
-  "Transform a component Om ref into the proper UI property top-level key. See the README on storing UI state 
-  separately from persistent data."
+  "Transform a component Om ref into the proper UI property top-level key."
   [ref]
   (let [[persistent-key id] ref]
         [(keyword (str "ui." (namespace persistent-key)) "id") id]

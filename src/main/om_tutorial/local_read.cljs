@@ -18,7 +18,6 @@
   and unions (not supported yet by my helpers). NOTE: This also supports using the special ui-attribute db store that
   I invented for decomplecting UI state from persistent state"
   [{:keys [ast] :as env} key params]
-  (println ast)
   (let [is-ui? (= "ui" (namespace key))
         is-join? (and (= :prop (:type ast)) (:query ast))]
     (cond
