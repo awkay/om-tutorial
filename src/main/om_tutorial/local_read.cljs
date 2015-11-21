@@ -13,3 +13,15 @@
     (p/db-value env key)
     ))
 
+(defn generic-read-local
+  "EXPERIMENTAL: A function used Om parser to read local app state. This should work for everything except deep nesting
+  and unions (not supported yet by my helpers)."
+  [{:keys [ast] :as env} key params]
+  (println ast)
+  (let [is-ui? (= "ui" (namespace key))
+        is-join? (and (= :prop (:type ast)) (:query ast))]
+    (cond
+      is-ui? {:value (p/ui-attribute env key)}
+      is-join? {:value (p/parse-join-with-reader generic-read-local env key :limit 10)}
+      :else (p/db-value env key)
+      )))
