@@ -14,7 +14,9 @@
   TODO. Placeholder stuff from readme below...
   
   ## Parsing
-
+  
+  ## Joins
+  
   ### Local vs. Remote
 
   The Om parser accepts just one read and one mutate. Unfortunately, this means that the same code gets invoked
@@ -99,4 +101,17 @@
   When objects are found, this combination will automatically filter out unwanted attributes. For example, if you
   ask for `[:a]` in some sub-fragment, and the object in the state there has `{:a 1 :b 2}`, then this parser code
   will return `{:a 1}`.
+  
+  ## Path Optimization
+  
+  If your UI gets rather large, you may see warnings in the Javascript Console of the browser about slowness. If you do, 
+  you can leverage path optimization to minimize the amount of work the parser has to do in order to update a sub-portion
+  of the UI.
+  
+  If you pass `:pathopt true` to the reconciler, then Om will attempt to root a query at the component that needs 
+  re-rendering if and only if it has an `Ident`.
+  
+  When it attempts this, it will call your `read` function with `:query/root` set to the ident of the component that
+  is needing re-render, and 
+  
   ")
