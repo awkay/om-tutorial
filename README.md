@@ -8,32 +8,15 @@ will need some minor plumbing to do the actual network bits).
 
 ## What's inside?
 
-```
-├── cards
-│   └── om_tutorial
-│       ├── cards.cljs
-│       └── parsing_cards.cljs     Devcards with parsing tests
-├── project.clj
-├── resources
-│   └── public
-│       ├── cards.html             HTML pages for accessing cards and UI
-│       └── index.html
-├── script
-│   └── figwheel.clj               Dev run script
-└── src
-    └── om_tutorial
-        ├── client_mutation.cljs   Functions that mutate the client state
-        ├── client_remoting.cljs   Remote read (for parsing) and send functions (for sim server comms)
-        ├── core.cljs              Entry point
-        ├── local_read.cljs        Function to read local state (for parsing)
-        ├── parsing.cljs           Helper functions to make parsing easy!
-        ├── simulated_server.cljs  Simulated server in the browser (using setTimeout)
-        └── ui.cljs                The UI components
-```
+The organization is in flux. The top-level `src` directory contains:
+
+- `main`: A demo application with simulated remote server (in progress, but working)
+- `tutorial`: Devcards with a live tutorial (in progress)
+- `cards` : Some development/tests written in devcards
 
 ## Running it
 
-There is a clojure script in the `script` folder. Simply run that in Cursive (Run..., Add a Clojure Local REPL, Run with Clojure Main)
+There is a clojure script in the `script` folder. Simply run that in Cursive (Run..., Add a Clojure Local REPL, Run with Clojure Main (NOT nREPL!))
 or at the command line with:
 
 ```
@@ -54,6 +37,22 @@ http://localhost:3450/                - Main app
 http://localhost:3450/cards.html      - Devcards (tests) UI
 ```
 
-Mainly, you want to follow the pages in the tutorial. It will refer to the other tabs as it goes.
+I have it set up this way because later I'm going to add support for running both an nREPL and fighweel REPL
+from the same JVM, and this makes it easier to do. You can edit the `src/dev/user.clj` if you like, and put
+`(start-dev)` at the bottom to avoid having to manually start it.
 
+For now, feel free to browse the source of the demo app, or follow the pages in the tutorial.
+
+Expect things to change often...this is a work in progress that may take several weeks. If you'd like
+to contribute, I'd love the help. Ping me on Slack (@tony.kay) so we don't stomp on each other.
+
+Some things I'd like to have (but don't have the time to get to):
+
+- Docs in the UI section (or a subsection) that talk about more basics of (stateless) UI. E.g. more references
+to React docs, what the `#js` stuff is about and why you only do it on dom elements. Basic gotchas for 
+beginners. Bonus points if anyone wants to hack the cljs ecosystem so that code pretty-printing can _handle_
+`#js`.
+- A stateless Om component that can render a tree on demand (given the tree data in props).
+  e.g.,  http://www.cssscript.com/creating-simple-diagrams-with-nodes-and-links-using-svg-and-d3-js/
+- CSS for anything you think is too ugly
 

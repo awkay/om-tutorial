@@ -138,7 +138,7 @@
                (let [{:keys [people number b]} (om/props this)
                      {:keys [incHandler boolHandler]} (om/get-computed this)]
                  (dom/div nil
-                          ; devcards cannot deal with #js on rendering source. Using clj->js instead
+                          ; code pprinter cannot deal with #js on rendering source. Using clj->js instead
                           (dom/button (clj->js {:onClick #(boolHandler)}) "Toggle Luck")
                           (dom/button (clj->js {:onClick #(incHandler)}) "Increment Number")
                           (dom/span nil (str "My " (if b "" "un") "lucky number is " number
