@@ -132,7 +132,7 @@
 
 (defn ref-at-db-path 
   "Returns the ref at the :db-path in the environment instead of following it to an object. Returns nil if the
-  item at the db-path is not an Om ref."
+  item at the db-path is not an Ident."
   [{:keys [db-path state] :as env}]
   (loop [node @state path db-path]
     (let [k (first path)

@@ -10,6 +10,14 @@
 (defcard-doc
   "
   # State Reads and Parsing
+
+  Now that we understand the format of the default database, the basics of the query grammar, and how we're going to
+  locate those queries on the UI it is time to understand how we get data from the app database onto that UI. The
+  join point is code that you write and plug into the Om parser to help it transfer data from your client app
+  state database to the UI.
+
+
+  ##
   
   TODO. Placeholder stuff from readme below...
   
