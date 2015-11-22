@@ -37,19 +37,26 @@
   The primary mechanim for creating components is the `defui` macro:"
   (dc/mkdn-pprint-source Widget)
   "This macro generates a React Class as a plain javascript class, so it is completely compatible with the
-  React ecosystem."
-  "## React Lifecycle Methods
+  React ecosystem.
+
+  Notice the use of `Object`. It indicates that the following list of method bodies (like in protocols) are being
+  added to the general class. From an OO perspective, this is like saying \"my widget extends Object\". The
+  `render` method is the only method you need, but you can also add in your own methods or React lifecycle methods.
+
+  ## React Lifecycle Methods
   
   If you wish to provide <a href=\"https://facebook.github.io/react/docs/component-specs.html#lifecycle-methods\"
-  target=\"_blank\">lifecycle methods</a>, you can define them under the Object section of the UI:"
+  target=\"_blank\">lifecycle methods</a>, you can define them under the Object section of the UI:
+  "
   (dc/mkdn-pprint-source WidgetWithHook)
   "
   ## Element factory
-  
-  You generate a factory for elements of this class with `om/factory`. This generates a function that
+
+  In order to render components on the screen you need an element factory.
+  You generate a factory with `om/factory`, which will then
   acts like a new 'tag' for your DOM:"
   (dc/mkdn-pprint-source widget)
-  "and you can render these as plain React components in a <a href=\"https://github.com/bhauman/devcards#devcards\"
+  "Since they are plain React components you can render them in a <a href=\"https://github.com/bhauman/devcards#devcards\"
   target=\"_blank\">devcard</a>, which makes fine tuning them as pure UI dead simple:
   
   ```
@@ -59,13 +66,15 @@
   "The resulting card looks like this:"
   )
 
-(defcard widget-card
-         (widget {})
-         )
+(defcard widget-card (widget {}))
 
 (defcard-doc
-  "You can send properties to such a stateless thing as a simple edn map, and pull them out of `this` using 
-  `om/props`."
+  "Such components are known as \"stateless components\" in Om because they do not expliticly ask for data. Later,
+  when we learn about colocated queries, you'll see it is possible for a component to ask for the data it needs in
+  a declarative fasion.
+
+  For now, understand that you can give data to a stateless component via a simple edn map, and pull them out of
+  `this` using `om/props`:"
   (dc/mkdn-pprint-source WidgetWithProperties)
   (dc/mkdn-pprint-source prop-widget)
   "
@@ -127,6 +136,12 @@
   whether or not you use the rest of the features of Om. A root component calls the factory functions of subcomponents
   with an edn map as the first argument. That map is accessed using `om/props` on `this` within the subcomponent. Data
   is passed from component to component through `props`.
+
+  ## Play With It
+
+  At this point (if you have not already) you should play with the code in `B-UI.cljs`. Search for `root-render`
+  and then scan backwards to the source. You should try adding an object to the properties (another person),
+  and also try playing with editing/adding to the DOM.
   "
   )
 
@@ -150,47 +165,36 @@
 
 (defcard-doc
   "
-  ## Out-of-band Data
-  
-  In plain React, you pass stuff through props. In Om, props is meant to take a slightly different role: The properties
-  of the component that have to do with state. Particularly queried state, which we'll cover later.
+  ## Out-of-band Data: Callbacks and such
 
-  Because of internal requirements having to do with efficient re-rendering (among others), you should not pass
-  \"computed\" things (e.g. callbacks) through props.
-  
-  Instead Om has helper functions for hanging this computed information in a side-band channel of props. So, in the
-  example below you'll see that a callback is being passed via `om/computed` and `om/get-computed`. The 
-  former attaches the extra bits to the props, and the latter pulls them out.
-  
-  Sorry about the use of `clj->js`...devcards can't currently render the source of something with reader tags in it. Note
-  that you'd normally write `#js { :onClick ...}`.
+  In plain React, you store component local state and pass stuff from the parent through props.
+  Om is no different, though component-local state is a matter of much debate since you get many advantages from
+  having a stateless UI. In React, you also pass your callbacks through props. In Om, we need a slight variation of
+  this.
+
+  In Om, a component can have a query that asks the underlying system for data. If you complect callbacks and such
+  with this queried data then you run into trouble. So, in general *props have to do with passing data that
+  the component requested from a query*.
+
+  As such, Om has an additional mechanism for passing things that were not specifically asked for in a query: Computed
+  properties.
+
+  For your Om UI to function properly you must attach computed properties *to* props via the helper function `om/computed`.
+  The child can look for these computed properties using `get-computed`.
+
+  (remember about the use of `clj->js`...devcards can't currently render the source of something with reader tags in it.
+  You'd normally write `#js { :onClick ...}`).
+
   "
 
   (dc/mkdn-pprint-source Root-computed)
   (dc/mkdn-pprint-source root-computed)
 
-  "The resulting card (with modifiable state) looks like this:
-  ```
-  (defcard passing-callbacks-via-computed
-         (fn [data-atom-from-devcards _]
-           (let [prop-data @data-atom-from-devcards
-                 sideband-data {:incHandler  (fn [] (swap! data-atom-from-devcards update-in [:number] inc))
-                                :boolHandler (fn [] (swap! data-atom-from-devcards update-in [:b] not))}
-                 ]
-             (root-computed (om/computed prop-data sideband-data)))
-           )
-         {:number 42 :people [{:name \"Sally\"}] :b false}
-         {:inspect-data true})
-  ```
+  "
+  ## Play with It!
 
-  ## Important Notes and Further Reading
-
-  - Use plain cljs data structures as input to your own Elements
-  - Extract properties with `om/props`. The is the same for stateful (with queries) or stateless components.
-  - Add parent-generated things (like callbacks) using `om/computed`.
-  - Remember to use `#js` (instead of `clj->js`) to transform attribute maps for passing to DOM elements
-
-  TODO: Add links to various docs
+  Open B-UI.cljs, search for `passing-callbacks-via-computed`, and you'll find the card shown below. Interact with it
+  in your browser, play with the source, and make sure you understand everything we've covered so far.
   "
   )
 
@@ -204,3 +208,16 @@
            )
          {:number 42 :people [{:name "Sally"}] :b false}
          {:inspect-data true})
+
+(defcard-doc
+  "
+
+  ## Important Notes and Further Reading
+
+  - Remember to use `#js` (shown as `clj->js` in many examples) to transform attribute maps for passing to DOM elements
+  - Use *cljs* maps as input to your own Elements
+  - Extract properties with `om/props`. The is the same for stateful (with queries) or stateless components.
+  - Add parent-generated things (like callbacks) using `om/computed`.
+
+  TODO: Add links to various docs
+  ")

@@ -13,10 +13,9 @@
   This tutorial will walk you through the various parts of Om 1.0 (alpha). In order to get the most from this 
   tutorial, you should understand the general goals of Om (next):
   
-  - Keep application state in a single top-level atom.
-  - Provide a mechanism whereby clients can:
-      - Make precise non-trivial reads simply
-      - Allow clients to communicate non-trivial operations simply.
+  - Make it possible to localize application state in a single client database abstraction (e.g. single top-level atom
+  holding a map)
+  - Provide a mechanism whereby clients can make precise non-trivial reads simply and communicate non-trivial operations simply.
   - Eliminate the need for event models
   - Provide a synchronous programming model
   
@@ -65,21 +64,6 @@
   changes to something and the saved state no longer makes sense then you will need to reload the page via the browser
   to clear that state.
 
-  ## General Components of Om
-  
-  The following significant areas of Om must be understood in order to write a non-trivial application.
-  
-  - Building the UI.
-  - Queries and the Query Grammar.
-  - Colocating query fragments on stateful UI component (for composition and local reasoning).
-  - The client-local app state database.
-  - Turning the Queries into data for your UI.
-  - Turning the Queries into remote requests for data.
-  - Processing incoming responses to remote requests.
-  - Dynamically changing Queries
-  
-  [Let's start with the UI.](#!/om_tutorial.B_UI)
-  
   ## Notes on documentation:
 
   Om wrappers on plain DOM elements take as their second parameter a javascript map (not a cljs one) or nil. As such, you
@@ -99,5 +83,21 @@
   mechanism it uses to do this (the `cljs.repl/source` function) cannot currently handle reader tags. So, in
   some examples I'm using the `cljs->js` function instead to make sure the docs and source stay in sync. I
   feel the latter is more important than the former, and once the source pulling is fixed it will be easy to
-  fix the source to use the reader.
+  fix the source and have all of the documentation automatically update.
+
+  ## General Components of Om
+  
+  The following significant areas of Om must be understood in order to write a non-trivial application.
+  
+  - Building the UI.
+  - Queries and the Query Grammar.
+  - Colocating query fragments on stateful UI component (for composition and local reasoning).
+  - The client-local app state database.
+  - Turning the Queries into data for your UI.
+  - Turning the Queries into remote requests for data.
+  - Processing incoming responses to remote requests.
+  - Dynamically changing Queries
+  
+  [Let's start with the UI.](#!/om_tutorial.B_UI)
+  
   ")
