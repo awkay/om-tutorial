@@ -3,7 +3,9 @@
     [cljs.test :refer [is]]
     )
   (:require [om.next :as om :refer-macros [defui]]
+            [om.next.impl.parser :as p]
             [om.dom :as dom]
+            [cljs.reader :as r]
             [om-tutorial.queries.query-demo :as qd]
             [devcards.core :as dc :refer-macros [defcard defcard-doc]]
             ))
@@ -160,21 +162,38 @@
          {:inspect-data true}
          )
 
+(defcard sample-ast
+         (fn [state _]
+           (let [{:keys [v]} @state]
+             (dom/div nil
+                      (dom/input #js {:type     "text"
+                                      :value    v
+                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+                      (dom/button #js {:onClick #(try
+                                                  (swap! state assoc :error "" :ast (p/expr->ast (r/read-string v)))
+                                                  (catch js/Error e (swap! state assoc :error e))
+                                                  )} "Evaluate AST")
+
+                      ))
+           )
+         {:ast []}
+         {:inspect-data true}
+         )
+
 (defcard-doc "
   In the above example, you could have just as well defined the intermediate node as a plain function, and saved
   yourself some typing (and the need to unpack props in the middle).
 
+  You should edit this document (`C_Queries.cljs`) and play with the sample-rendering-with-result-data card. The
+  code for the UI for this example is in `tutorial/om_tutorial/queries/query_demo.cljs`.
 
+  Once you've understood the above, you might want to proceed to the section on the [App Database](#!/om_tutorial.D_App_Database).
 
   TODO:
   
   - Quoting
-  - Composition of queries
-  - Stateless components in UI tree
-  - UI Tree vs Query Tree
-    
-  Once you've understood the above, you might want to proceed to the section on the [App Database](#!/om_tutorial.D_App_Database).
-  
+
+
   ## More Advanced Queries
 
   ### Parameters

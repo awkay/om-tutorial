@@ -6,7 +6,7 @@
   "The function used by our Om parser to read local app state."
   [env key params]
   (case key
-    :ui/checked {:value (p/ui-attribute env key) }
+    :ui/checked {:value (p/ui-attribute env key)}
     :person/mate {:value (p/parse-join-with-reader read-local env key :limit 2)}
     :people {:value (p/parse-join-with-reader read-local env key)}
     :widget {:value (p/parse-join-with-reader read-local env key :reset-depth 0)}
@@ -19,7 +19,7 @@
   I invented for decomplecting UI state from persistent state"
   [{:keys [ast] :as env} key params]
   (let [is-ui? (= "ui" (namespace key))
-        is-join? (and (= :prop (:type ast)) (:query ast))]
+        is-join? (= :join (:type ast))]
     (cond
       is-ui? {:value (p/ui-attribute env key)}
       is-join? {:value (p/parse-join-with-reader generic-read-local env key :limit 10)}
@@ -28,7 +28,7 @@
 
 (defn split-read-person "Read stuff for a person query." [env key params]
   (case key
-    :ui/checked {:value (p/ui-attribute env key) }
+    :ui/checked {:value (p/ui-attribute env key)}
     :person/mate {:value (p/parse-join-with-reader split-read-person env key :limit 2)}
     (p/db-value env key)
     ))

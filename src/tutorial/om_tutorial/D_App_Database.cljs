@@ -5,7 +5,7 @@
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
             [devcards.core :as dc :refer-macros [defcard defcard-doc]]
-            ))
+            [cljs.reader :as r]))
 
 (defui C
        static om/Ident
@@ -107,40 +107,73 @@
 (defcard-doc
   "
   So while the overall UI tree has `I` in it, the query result tree does not (since `I` has no query).
-  
-  But we're not done yet. What if two components on the screen happen to render different views of the same 
+
+  ## Ident
+
+  But we're not done yet. What if two components on the screen happen to render different views of the same
   data? Any time you pull information from a server, it is possible someone might co-locate a query for it, and
   then you're screwed...updating one branch of the UI state tree will only cause one component to update.
   
-  Identity (and cross-referencing) to the rescue.
-  
-  By placing an Ident on your component, you enable Om to understand when two components are rendering data derived
-  from the same source (e.g. a table and a graph).
-  
   In order for this to work well, you ideally want to have that shared data in your app state just once.
-  
+
+  So, the default Om database format encourages you to identify this kind of data and put the actual
+  data in top-level tables. Then, in the UI state tree, place references (idents) to that top-level data. This
+  way, you can update it in one place, and Om can re-render everything that depends on it.
+
   An ident is just a unique identity, represented as a 2-tuple `vector` with a first element keyword. An ident need only
   be client-unique, but will often be based on real server-persisted data. Examples might be `[:people/by-id 3]`
-  and `[:ui.button/by-id 42]`. Om can use these to find components that share state and should update together,
-  and for other things like parse optimization.
-  
-  So, the default Om database format requires that any component with an Ident have it's state represented in the 
-  state database as the ident of the object, and the actual data for that object goes at the *top* of the state
-  map, as a database map of those kind of objects. The Om function `tree->db` can convert such database *state* 
-  trees into this format given a query from components that have `Ident`. 
-  
-  If we take the proposed *result tree*:"
-  result-tree
-  "
-  and apply `(om/tree->db A result-tree true)`:"
-  (om/tree->db A result-tree true)
-  "
-  
-  Then we arrive at the desired default database format for Om.
-  
-  Formally, this is a tree of data where all of the objects that have an ident are replaced by that ident, and 
+  and `[:ui.button/by-id 42]`.
+
+  Ident is declared a lot like queries, but in this case you
+  will be passed the props of the component (e.g. when it mounts) so the ident function
+  can return a specific identity for the component that is actually mounted in the DOM:
+
+  ```
+  (defui Component
+    static om/Ident
+    (ident [this props] [:c/by-k (:k props)])
+    ...)
+  ```
+
+  ## Sample Default Database
+
+
+  The Om function `tree->db` can convert non-normalized state
+  trees into this format given a query that includes components that have `Ident`.
+
+  If we take a proposed *result tree* and apply `(om/tree->db A result-tree true)`,
+  then we'll get a database in the default format. Formally, this is a tree of data
+  where all of the objects that *have* an ident are replaced *by* that ident, and
   the actual data of those objects is moved to top-level Om-owned tables.
-  
-  ## TODO: Diagram of default database format
-  
   ")
+
+(defn convert [s]
+  (try
+    (om/tree->db A (r/read-string s) true)
+    (catch js/Error e (str "Invalid input. Make sure you gave valid edn. Reload the page to start over."))
+    ))
+
+(defcard
+  (fn [state-atom _]
+    (let [{:keys [v]} @state-atom]
+      (dom/div nil
+               (dom/input #js {:size     100 :type "text" :value v
+                               :onChange (fn [evt] (swap! state-atom assoc :v (.. evt -target -value)))})
+               (dom/button #js {:onClick #(swap! state-atom assoc
+                                                 :normalized-database (convert v))} "Update")
+               )))
+  {:v                   (str result-tree)
+   :normalized-database (om/tree->db A result-tree true)}
+  {:inspect-data true})
+
+(defcard-doc
+  "
+  Feel free to play with the above dev card. I recommend trying:
+
+  - Try changing element IDs in the `:join-c` vector.
+  - Add another map to the vector under `:join-c`
+  - Remove a `:k` entry from one of the items in the vector. What happens?
+
+## TODO: Diagram of default database format
+
+")

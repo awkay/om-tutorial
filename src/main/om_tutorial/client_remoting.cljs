@@ -16,10 +16,11 @@
     )
   )
 
+(defn dbg [v] (println v) v)
+
 (defn send [remote-queries cb]
-  (println "REMOTE queries are: " remote-queries)
   (let [payload (:my-server remote-queries)
-        {:keys [query rewrite]} (om/process-roots payload) ;; FIXME: BUG: process-roots should NOT return empty!
+        {:keys [query rewrite]} (om/process-roots (dbg payload))  ;; FIXME: BUG: process-roots should NOT return empty!
         server-response (simulated-server query)
         ]
     (println "Suggested query: " payload)
