@@ -1,6 +1,8 @@
 (ns om-tutorial.parsing
   (:require [om.next :as om]))
 
+(defn dbg [msg v] (println msg v) v)
+
 (defn new-read-entry-point
   "Create a new read entry point that allows you to switch read functions during a local parse, and can
   be configured with an alternate reader for each remote.
@@ -23,12 +25,13 @@
 ;; play with them more as well). 
 
 (defn descend
-  "Recursively descend the state database (moves :node in the env to the child with the given key in the current node (which originally
-  starts at app-state root). Basically, walk into the app state. Assumes the shape of the state at the present node mimics
-  the (stateful) UI tree at that key.
+  "Recursively descend the state database, tracking position in :db-path. If given a ref as the key, rewrites
+   db-path to be rooted at that ref.
   "
   [env key]
-  (update-in env [:db-path] conj key))
+  (if (om/ref? key)
+    (assoc env :db-path [key])
+    (update-in env [:db-path] conj key)))
 
 (defn parse-with-reader
   "Cause this parse to recursively descend, but switch to using the named reader function. 
@@ -54,7 +57,7 @@
     obj-or-ref
     ))
 
-(defn get-in-db-path 
+(defn get-in-db-path
   "This is just like get-in; however, it walks the path and if it hits an Om ref, it will 
   follow that to the real object. This is useful for walking the overall graph as the query
   might need."
@@ -63,20 +66,22 @@
     (if (empty? path)
       node
       (let [k (first path)
-            v (follow-ref env (get node k))]
+            v (if (om/ref? k) (get-in @state k) (follow-ref env (get node k)))]
         (recur v (rest path))
         ))))
 
 
 (defn dbget
   "Get the specified key from the state in the environment, honoring the current :db-path. 
-  Follows refs to top-level tables."
+  Follows refs (in the db-path variable OR the app state) to top-level tables."
   ([env key] (dbget env key nil))
   ([{:keys [state db-path] :as env} key dflt]
-   (let [node-state (get-in-db-path env)
-         value (get node-state key dflt)]
-     (follow-ref env value)
-     )))
+   (if (om/ref? key)
+     (get-in @state key dflt)
+     (let [node-state (get-in-db-path env)
+           value (get node-state key dflt)]
+       (follow-ref env value)
+       ))))
 
 (defn db-value
   "Exactly equivalent to {:value (dbget env key nil)}. Useful as immediate return value of read."
@@ -121,46 +126,49 @@
           env' (-> env
                    (descend key)
                    (assoc :depth (or reset-depth (inc depth)) :reader reader)
-                   (dissoc :query))
+                   )
           ]
       (cond
         to-many? (into [] (map-indexed (fn [idx _] (parser (descend env' idx) query)) items))
         to-one? (parser env' query)
-        :else :missing
+        :else nil
         )
       )))
 
-(defn ref-at-db-path 
+(defn ref-at-db-path
   "Returns the ref at the :db-path in the environment instead of following it to an object. Returns nil if the
   item at the db-path is not an Ident."
   [{:keys [db-path state] :as env}]
   (loop [node @state path db-path]
     (let [k (first path)
-          v (get node k)
+          v (if (om/ref? k) (get-in @state k) (get node k))
           v' (follow-ref env (get node k))]
       (if (= 1 (count path))
-        (if (om/ref? v) v nil)
+        (cond
+          (om/ref? k) k
+          (om/ref? v) v 
+          :else nil)
         (recur v' (rest path))
         ))))
 
-(defn ui-key 
+(defn ui-key
   "Transform a component Om ref into the proper UI property top-level key."
   [ref]
   (let [[persistent-key id] ref]
-        [(keyword (str "ui." (namespace persistent-key)) "id") id]
-  ))
+    [(keyword (str "ui." (namespace persistent-key)) (name persistent-key)) id]
+    ))
 
-(defn ui-attribute 
+(defn ui-attribute
   "Read a UI attribute that is pretending to be on the object at the current :db-path in the parse env. This 
   function should be used in conjunction with attributes namespaced as `:ui/...` so that the other read helpers
   can remove them from remote queries (TODO)."
-  [{:keys [state] :as env} key]
+  [{:keys [state db-path] :as env} key]
   (if-let [ref (ref-at-db-path env)]
     (let [uikey (ui-key ref)
           node (get-in @state uikey)
           value (get node key)]
       (if value {:value value} nil)
-    )))
+      )))
 
 (defn elide-empty-query
   "Helper method to prevent a remote request parse for the current key if the sub-parser response is empty.
@@ -191,7 +199,7 @@
 
 (defn fetch-if-missing
   "Terminate the descent of the parse and indicate the rest of the sub-query should run against the target indicated
-  by the environment *if* the given key in the current app-state at :db-path is missing, nil, or `:missing`. 
+  by the environment *if* the given key in the current app-state at :db-path is missing or nil. 
   
   NOTE: If the *query* has a target on the AST (which indicates a forced read via a quote on the keyword) then this 
   function will always honor that and include the element in the remote fetch query.
@@ -206,8 +214,8 @@
   (let [cached-read-ok? (not (= target (:target ast)))
         value (dbget env key nil)
         as-root? (or (true? as-root?) (= :make-root as-root?))]
-    (println "FETCH " ast  " as root? " as-root?)
-    (if (and cached-read-ok? (not= nil value) (not= :missing value))
+    (println "FETCH " ast " as root? " as-root?)
+    (if (and cached-read-ok? (not= nil value))
       nil
       {target
        (cond-> ast

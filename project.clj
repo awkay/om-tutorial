@@ -23,6 +23,7 @@
                                           :asset-path "js"
                                           :output-to  "resources/public/js/main.js"
                                           :output-dir "resources/public/js"
+                                          :recompile-dependents true
                                           :verbose    false}}
                           {:id           "cards"
                            :figwheel     {:devcards true}
@@ -33,6 +34,7 @@
                                           :asset-path           "cards"
                                           :output-to            "resources/public/cards/cards.js"
                                           :output-dir           "resources/public/cards"
+                                          :recompile-dependents true
                                           :verbose              false}}
                           {:id           "tutorial"
                            :figwheel     {:devcards true}
@@ -43,6 +45,7 @@
                                           :asset-path           "tutorial"
                                           :output-to            "resources/public/tutorial/tutorial.js"
                                           :output-dir           "resources/public/tutorial"
+                                          :recompile-dependents true
                                           :verbose              false}}]}
 
   :profiles {

@@ -20,9 +20,9 @@
                     ; UI tables will be named by adding ui. to the namespace of the ref keyword in the ident.
                     ; See om-tutorial.client-mutation/toggle-ui-boolean for a mutation
                     ; See om-tutorial.local-read/read-local for an example of how to read
-                    :ui.db/id   {
-                                 1 {:ui.db/id 1 :ui/checked false}
-                                 2 {:ui.db/id 2 :ui/checked true}
+                    :ui.people/by-id   {
+                                 1 {:ui.people/by-id 1 :ui.people/checked false}
+                                 2 {:ui.people/by-id 2 :ui.people/checked true}
                                  }
                     })
 
@@ -34,6 +34,7 @@
 (def reconciler (om/reconciler {:state   initial-state
                                 :parser  parser
                                 :remotes [:my-server]
+                                :pathopt true
                                 :send    remote/send}))
 
 (om/add-root! reconciler ui/Root (gdom/getElement "app"))

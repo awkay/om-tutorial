@@ -1,26 +1,33 @@
 (ns om-tutorial.ui
-  (:require 
-            [om.next :as om :refer-macros [defui]]
-            [om.dom :as dom]))
+  (:require
+    [om.next :as om :refer-macros [defui]]
+    [om.dom :as dom]))
+
+(declare person)
 
 (defui Person
        static om/IQuery
-       (query [this] '[:ui/checked :db/id :person/name {:person/mate ...}])
+       (query [this] '[:ui.people/checked :db/id :person/name {:person/mate ...}])
        static om/Ident
-       (ident [this {:keys [db/id]}] [:db/id id])
+       (ident [this {:keys [db/id]}] [:people/by-id id])
 
        Object
        (render [this]
-               (let [{:keys [ui/checked db/id person/name]} (om/props this)
-                     {:keys [onDelete]} (om/get-computed this)]
-                 (dom/li nil 
-                         (dom/input #js {:type "checkbox" 
+               (let [{:keys [ui.people/checked db/id person/name person/mate]} (om/props this)
+                     {:keys [onDelete rendered-mate]} (om/get-computed this)]
+                 (dom/li nil
+                         (println "re-rendering " name)
+                         (dom/input #js {:type    "checkbox"
                                          ;; Toggle a boolean UI attribute. Must supply the attribute and ref of this 
-                                         :onClick #(om/transact! this `[(app/toggle-ui-boolean {:attr :ui/checked
-                                                                                                :ref [:db/id ~id]})])
+                                         :onClick #(om/transact! this `[(app/toggle-ui-boolean {:attr :ui.people/checked
+                                                                                                :ref  [:people/by-id ~id]}) 
+                                                                        [:people/by-id ~(:db/id mate)]
+                                                                        ])
                                          :checked (boolean checked)})
-                         name 
-                         (when onDelete (dom/button #js {:onClick #(onDelete id)} "X"))))))
+                         name
+                         (when onDelete (dom/button #js {:onClick #(onDelete id)} "X"))
+                         (when (and mate (not rendered-mate)) (dom/ul nil (person (om/computed mate {:rendered-mate true}))))
+                         ))))
 
 (def person (om/factory Person {:keyfn :db/id}))
 

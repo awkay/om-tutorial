@@ -32,8 +32,8 @@
                                                                     ))]
                (println "Optimistic add " name " w/tempid " temp-id)
                (swap! state assoc :new-person "")
-               (swap! state update-in [:db/id] assoc temp-id {:db/id temp-id :person/name name})
-               (swap! state update-in [:widget :people] create-or-conj [:db/id temp-id]))
+               (swap! state update-in [:people/by-id] assoc temp-id {:db/id temp-id :person/name name})
+               (swap! state update-in [:widget :people] create-or-conj [:people/by-id temp-id]))
              )
    })
 
@@ -61,10 +61,10 @@ We can do several possible things to deal with server response:
 #_"Handles a generalized bit of UI state that represents a UI boolean.
 Parameter should be the `ref` of the UI component that owns the boolean."
 (defmethod mutate 'app/toggle-ui-boolean
-  [{:keys [state ast] :as env} k {:keys [ref attr]}]
+  [{:keys [state]} k {:keys [ref attr]}]
   {:action (fn []
              (let [path (conj (p/ui-key ref) attr)]
-               (println "path " path)
+               (println "swap! state update-in " path " not")
                (swap! state update-in path not))
              )}
   )
