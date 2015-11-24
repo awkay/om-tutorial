@@ -15,7 +15,7 @@
 (defmethod mutate 'app/refresh
   [{:keys [state ast] :as env} k {:keys [name]}]
   {:action (fn []
-             (swap! state update-in [:widget :people] :missing)
+             (swap! state assoc-in [:widget :people] nil)
              )}
   )
 

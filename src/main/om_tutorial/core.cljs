@@ -28,7 +28,7 @@
 
 ; The new-read-entry-point gives you SAX-style parsing, and separates the local parser from the remote fetch one(s)
 ; No more complected logic!
-(def parser (om/parser {:read   (p/new-read-entry-point local/read-local {:my-server remote/read-remote})
+(def parser (om/parser {:read   (p/new-read-entry-point local/generic-read-local {:my-server remote/read-remote})
                         :mutate m/mutate}))
 
 (def reconciler (om/reconciler {:state   initial-state
@@ -42,7 +42,7 @@
 
 (comment
   (def q
-    (parser {:state (atom { :widget {:people :missing}})} '[{:widget [{:people [:ui/checked :db/id :person/name {:person/mate ...}]}]}] :my-server))
+    (parser {:state (atom { :widget {:people nil}})} '[{:widget [{:people [:ui/checked :db/id :person/name {:person/mate ...}]}]}] :my-server))
 
   (let [bit (-> q first :widget first)]
     (println bit)

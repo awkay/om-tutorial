@@ -15,23 +15,25 @@
     (p/db-value env key)
     ))
 
+(defn generic-read-local
+  "EXPERIMENTAL: A function used by an Om parser to read local app state. This should work for lots of things except deep nesting
+  and unions (not supported yet by my helpers). NOTE: This also supports using the special ui-attribute db store that
+  I invented for decomplecting UI state from persistent state"
+  [{:keys [ast] :as env} key params]
+  (println "READ " key)
+  (case key
+    ; path optimization...TODO: generalize
+    :people/by-id {:value (p/parse-join-with-reader read-local (assoc env :db-path []) (:key ast))}
+    (let [is-ui? (and (string? (namespace key)) (re-matches #"^ui\..*" (namespace key)))
+          is-join? (= :join (:type ast))]
+      (cond
+        is-ui? (p/ui-attribute env key)
+        is-join? {:value (p/parse-join-with-reader generic-read-local env key :limit 3)}
+        :else (p/db-value env key)
+        ))))
+
 ;; NOTE: The following versions have not been updated to support pathopt
 (comment
-  (defn generic-read-local
-    "EXPERIMENTAL: A function used by an Om parser to read local app state. This should work for lots of things except deep nesting
-    and unions (not supported yet by my helpers). NOTE: This also supports using the special ui-attribute db store that
-    I invented for decomplecting UI state from persistent state"
-    [{:keys [ast] :as env} key params]
-    (case key
-      :people/by-id {:value (p/parse-join-with-reader read-local (assoc env :db-path []) (:key ast) true)}
-      (let [is-ui? (= "ui" (namespace key))
-            is-join? (= :join (:type ast))]
-        (cond
-          is-ui? (p/ui-attribute env key)
-          is-join? {:value (p/parse-join-with-reader generic-read-local env key :limit 10)}
-          :else (p/db-value env key)
-          ))))
-
   (defn split-read-person "Read stuff for a person query." [env key params]
     (case key
       :ui/checked (p/ui-attribute env key)

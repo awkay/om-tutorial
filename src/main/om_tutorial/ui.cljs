@@ -39,7 +39,7 @@
                (let [people (-> (om/props this) :people)
                      deletePerson (fn [id] (om/transact! this `[(app/delete-person {:db/id ~id}) :people]))]
                  (dom/div nil
-                          (if (= :missing people)
+                          (if (= nil people)
                             (dom/span nil "Loading...")
                             (dom/div nil
                                      (dom/button #js {:onClick #(om/transact! this '[(app/save)])} "Save")
