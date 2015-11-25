@@ -13,31 +13,31 @@
 
 (let [people-query [:ui.people/checked :db/id :person/name {:people '...}]]
   (dc/deftest strip-ui
-    "Strips from query any keyword that has a ui namespace"
+              "Strips from query any keyword that has a ui namespace"
 
-    "is-ui-query-fragment? propertly detects if its a ui keywords"
-    (is (#'p/is-ui-query-fragment? :ui.people/by-id))
-    (is (#'p/is-ui-query-fragment? :ui/by-id))
-    (is (not (#'p/is-ui-query-fragment? :my.ui/person)))
-    (is (not (#'p/is-ui-query-fragment? :uix/person)))
-    (is (not (#'p/is-ui-query-fragment? :new-person)))
-    (is (not (#'p/is-ui-query-fragment? "ui/by-id ")))
-    (is (not (#'p/is-ui-query-fragment? 36)))
-    (is (not (#'p/is-ui-query-fragment? 'ui.foo/bar)))
+              "is-ui-query-fragment? propertly detects if its a ui keywords"
+              (is (#'p/is-ui-query-fragment? :ui.people/by-id))
+              (is (#'p/is-ui-query-fragment? :ui/by-id))
+              (is (not (#'p/is-ui-query-fragment? :my.ui/person)))
+              (is (not (#'p/is-ui-query-fragment? :uix/person)))
+              (is (not (#'p/is-ui-query-fragment? :new-person)))
+              (is (not (#'p/is-ui-query-fragment? "ui/by-id ")))
+              (is (not (#'p/is-ui-query-fragment? 36)))
+              (is (not (#'p/is-ui-query-fragment? 'ui.foo/bar)))
 
-    "remove-ui-query-fragments removes all ui-query-fragments from a vector"
-    (is (= [:db/id :person/name {:people '...}]
-           (#'p/remove-ui-query-fragments people-query)))
+              "remove-ui-query-fragments removes all ui-query-fragments from a vector"
+              (is (= [:db/id :person/name {:people '...}]
+                     (#'p/remove-ui-query-fragments people-query)))
 
-    "strip-ui removes all nested ui-query-fragments that are in vectors"
-    (is (= [{:widget [{:people (remove #{:ui.people/checked}
-                                       people-query)}]}]
-           (p/strip-ui [{:widget [{:people people-query}]}])))
+              "strip-ui removes all nested ui-query-fragments that are in vectors"
+              (is (= [{:widget [{:people (remove #{:ui.people/checked}
+                                                 people-query)}]}]
+                     (p/strip-ui [{:widget [{:people people-query}]}])))
 
-    "strip-ui removes any properties 'called' with params"
-    (is (= [{:widget [{:people []}]}]
-           (p/strip-ui [{:widget [{:people ['(:ui.people/prop {:some :params})]}]}])))
-    ))
+              "strip-ui removes any properties 'called' with params"
+              (is (= [{:widget [{:people []}]}]
+                     (p/strip-ui [{:widget [{:people ['(:ui.people/prop {:some :params})]}]}])))
+              ))
 
 (let [env {:db-path []}
       env' (p/descend env :a)
@@ -70,15 +70,15 @@
               (is (= {:db/id 1 :person/name "Joe"} (p/follow-ref env [:db/id 1]))))
             )
 
-(let [initial-state {:last-error      "Some Error" :new-person "Sally"
-                     :widget          {
-                                       :people
-                                       [{:db/id 1 :person/name "Tony" :garbage 1 :person/mate {:db/id 2 :a 5 :person/name "Jane"}}
-                                        {:db/id 2 :person/name "Jane" :garbage 2 :person/mate {:db/id 1 :b 2 :person/name "Tony"}}]
-                                       }
-                     :ui.db/id {
-                                       2 {:ui.db/id 2 :ui/checked true}
-                                       }
+(let [initial-state {:last-error "Some Error" :new-person "Sally"
+                     :widget     {
+                                  :people
+                                  [{:db/id 1 :person/name "Tony" :garbage 1 :person/mate {:db/id 2 :a 5 :person/name "Jane"}}
+                                   {:db/id 2 :person/name "Jane" :garbage 2 :person/mate {:db/id 1 :b 2 :person/name "Tony"}}]
+                                  }
+                     :ui.db/id   {
+                                  2 {:ui.db/id 2 :ui/checked true}
+                                  }
                      }
       normalized-state (om/tree->db ui/Root initial-state true)
       env {:state (atom normalized-state)}]
@@ -106,14 +106,14 @@
               (is (=
                     {:widget {
                               :people
-                              [{:db/id 1 :person/name "Tony" :person/mate {:db/id 2 :ui.people/checked true :person/name "Jane"}}
-                               {:db/id 2 :ui.people/checked true :person/name "Jane" :person/mate {:db/id 1 :person/name "Tony"}}]
+                              [{:db/id 1 :person/name "Tony" :person/mate {:db/id 2 :ui/checked true :person/name "Jane"}}
+                               {:db/id 2 :ui/checked true :person/name "Jane" :person/mate {:db/id 1 :person/name "Tony"}}]
                               }}
-                    (core/parser env '[{:widget [{:people [:ui.people/checked :db/id :person/name {:person/mate ...}]}]}])
+                    (core/parser env '[{:widget [{:people [:ui/checked :db/id :person/name {:person/mate ...}]}]}])
                     ))
               "Can do a path optimized read"
               (is (=
-                    {:db/id 2 :ui.people/checked true :person/name "Jane" :person/mate {:db/id 1 :person/name "Tony"}}
-                    (get (core/parser env [{[:people/by-id 2] (om/get-query ui/Person)}]) [:people/by-id 2])
+                    {:db/id 2 :ui/checked true :person/name "Jane" :person/mate {:db/id 1 :person/name "Tony"}}
+                    (get (core/parser env [{[:db/id 2] (om/get-query ui/Person)}]) [:db/id 2])
                     ))
               ))
