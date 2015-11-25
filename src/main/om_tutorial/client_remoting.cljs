@@ -12,7 +12,7 @@
   (case key
     :widget (p/recurse-remote env key true)
     :people (p/fetch-if-missing env key :make-root)
-    :not-remote ; prune everything else from the parse
+    :not-remote                                             ; prune everything else from the parse
     )
   )
 
@@ -20,15 +20,15 @@
 
 (defn send [remote-queries cb]
   (let [payload (:my-server remote-queries)
-        {:keys [query rewrite]} (om/process-roots (dbg payload))  ;; FIXME: BUG: process-roots should NOT return empty!
+        {:keys [query rewrite]} (om/process-roots (dbg payload)) ;; FIXME: BUG: process-roots should NOT return empty!
+        _ (println "Suggested query: " payload)
+        _ (println "REMOTE payload (after re-root): " query)
         server-response (simulated-server query)
         ]
-    (println "Suggested query: " payload)
-    (println "REMOTE payload (after re-root): " query)
     (js/setTimeout (fn []
                      (println "SERVER response is: " server-response)
                      (cb (rewrite server-response))
-                     ) 1000)
+                     ) 100)
     )
   )
 

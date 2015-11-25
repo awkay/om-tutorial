@@ -6,8 +6,8 @@
   "The function used by our Om parser to read local app state."
   [{:keys [query ast db-path] :as env} key params]
   (case key
-    :people/by-id {:value (p/parse-join-with-reader read-local (assoc env :db-path []) (:key ast))}
-    :ui.people/checked (p/ui-attribute env key)
+    ;:people/by-id {:value (p/parse-join-with-reader read-local (assoc env :db-path []) (:key ast))}
+    :ui/checked (p/ui-attribute env key)
     ;; needed to bump recursion limit due to possible path optimization path starting point
     :person/mate (when-not (:mate-read env) {:value (p/parse-join-with-reader read-local (assoc env :mate-read true) key)})
     :people {:value (p/parse-join-with-reader read-local env key)}
@@ -22,7 +22,6 @@
     and unions (not supported yet by my helpers). NOTE: This also supports using the special ui-attribute db store that
     I invented for decomplecting UI state from persistent state"
     [{:keys [ast] :as env} key params]
-    (println "READ " key)
     (case key
       ; path optimization...TODO: generalize
       :people/by-id {:value (p/parse-join-with-reader read-local (assoc env :db-path []) (:key ast))}

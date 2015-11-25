@@ -48,8 +48,8 @@
                                        [{:db/id 1 :person/name "Tony" :garbage 1 :person/mate {:db/id 2 :a 5 :person/name "Jane"}}
                                         {:db/id 2 :person/name "Jane" :garbage 2 :person/mate {:db/id 1 :b 2 :person/name "Tony"}}]
                                        }
-                     :ui.people/by-id {
-                                       2 {:ui.people/by-id 2 :ui.people/checked true}
+                     :ui.db/id {
+                                       2 {:ui.db/id 2 :ui/checked true}
                                        }
                      }
       normalized-state (om/tree->db ui/Root initial-state true)

@@ -11,6 +11,15 @@
   {:action (fn [] (swap! state assoc :new-person value))}
   )
 
+(defmethod mutate 'app/save
+  [{:keys [state ast] :as env} k {:keys [name]}]
+  (println "Locale Mutate " ast)
+  (let [save-ast (assoc ast :params (get @state :db/id))]
+    {
+     :my-server save-ast
+     })
+  )
+
 ;"Clear the people, which will trigger a re-read from remote."
 (defmethod mutate 'app/refresh
   [{:keys [state ast] :as env} k {:keys [name]}]
@@ -32,8 +41,8 @@
                                                                     ))]
                (println "Optimistic add " name " w/tempid " temp-id)
                (swap! state assoc :new-person "")
-               (swap! state update-in [:people/by-id] assoc temp-id {:db/id temp-id :person/name name})
-               (swap! state update-in [:widget :people] create-or-conj [:people/by-id temp-id]))
+               (swap! state update-in [:db/id] assoc temp-id {:db/id temp-id :person/name name})
+               (swap! state update-in [:widget :people] create-or-conj [:db/id temp-id]))
              )
    })
 
@@ -64,7 +73,6 @@ Parameter should be the `ref` of the UI component that owns the boolean."
   [{:keys [state]} k {:keys [ref attr]}]
   {:action (fn []
              (let [path (conj (p/ui-key ref) attr)]
-               (println "swap! state update-in " path " not")
                (swap! state update-in path not))
              )}
   )

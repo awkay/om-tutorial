@@ -12,6 +12,7 @@
             [om-tutorial.E-State-Reads-and-Parsing]
             [om-tutorial.F-Mutation]
             [om-tutorial.G-Remote-Fetch]
+            [om-tutorial.H-Remote-Mutation]
             [om-tutorial.Z-Glossary]
             [om-tutorial.parsing :as p]
             [om-tutorial.core :as core]
