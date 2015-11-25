@@ -31,7 +31,6 @@
   {
    :value  {:saved true}
    :action (fn []
-             (println "Server save: " params)
              (let [incoming-items (vals params)
                    tempids (keep #(when (is-tempid? (:db/id %)) (:db/id %)) incoming-items)
                    remaps (reduce merge {} (map (fn [tid]
@@ -43,8 +42,6 @@
                                obj))
                    remapped-items (mapv perm-id incoming-items)
                    ]
-               (println "REMAPS: " remaps)
-               (println "items: " remapped-items)
                (swap! server-state assoc :people remapped-items)
                {:tempids remaps}
                ))})
