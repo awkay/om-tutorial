@@ -17,9 +17,9 @@
       env''' (p/descend env' [:db/id 5])
       path (fn [e] (:db-path e))]
   (dc/deftest descend-tests
-              "The descend function tracks which node the parser is on in state by appending the given key to 
+              "The descend function tracks which node the parser is on in state by appending the given key to
               :db-path in the given environment.
-              
+
               The path starts out empty"
               (is (= (path env) []))
               "Adding an element works"

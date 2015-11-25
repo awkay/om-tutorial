@@ -28,11 +28,11 @@
   - Update
       - Simply update the state in the \"tables\".
   - Delete
-      - Delete the refs from the UI state portion of state. You can leave the object in the tables (in case, say, 
+      - Delete the refs from the UI state portion of state. You can leave the object in the tables (in case, say,
         other UI components are looking at it, or you might want to undo the delete)
 
   After doing a mutation, you can trigger re-renders by listing query bits after the mutation. Any keywords you list
-  will trigger re-renders of things that queried for those keywords. Any refs (e.g. `[:db/id 4]`) will trigger 
+  will trigger re-renders of things that queried for those keywords. Any refs (e.g. `[:db/id 4]`) will trigger
   re-renders of anything that has that Ident. In the example below, anything that has included the prop named
   `:widget` or has the Ident `[:db/id 4]` will re-render after the operation.
 

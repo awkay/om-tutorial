@@ -31,7 +31,7 @@
 
 (defn start-dev
   "Start Figwheel and fw repl. You should be running this namespace from PLAIN clojure.main NOT nREPL!
-  
+
   nREPL support can be had (for server-side code) in parallel, but I've not finished adding it yet (since
   there is no server code yet).
   "

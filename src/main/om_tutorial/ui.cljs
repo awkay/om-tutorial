@@ -17,9 +17,9 @@
                      {:keys [onDelete rendered-mate]} (om/get-computed this)]
                  (dom/li nil
                          (dom/input #js {:type    "checkbox"
-                                         ;; Toggle a boolean UI attribute. Must supply the attribute and ref of this 
+                                         ;; Toggle a boolean UI attribute. Must supply the attribute and ref of this
                                          :onClick #(om/transact! this `[(app/toggle-ui-boolean {:attr :ui/checked
-                                                                                                :ref  [:db/id ~id]}) 
+                                                                                                :ref  [:db/id ~id]})
                                                                         [:db/id ~(:db/id mate)]
                                                                         ])
                                          :checked (boolean checked)})

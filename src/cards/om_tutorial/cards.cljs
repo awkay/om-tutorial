@@ -1,4 +1,4 @@
 (ns om-tutorial.cards
-  (:require 
+  (:require
     om-tutorial.om-specs
     om-tutorial.parsing-cards))

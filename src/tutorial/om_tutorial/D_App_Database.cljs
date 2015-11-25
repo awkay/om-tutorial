@@ -53,27 +53,27 @@
 (defcard-doc
   "
   # App Database
-  
+
   The client application database (client local state) is fully pluggable in Om; however, Om provides support for
-  a default database format, and understanding how to work with that will not only help you understand the 
+  a default database format, and understanding how to work with that will not only help you understand the
   common use-cases with standard Om, but also what you would have to do in order to plug in an alternate database
   in the client.
-  
+
   ## The Default Format
-  
+
   The default database format is an edn map. It can have as many top-level keys as make sense to you, but in general
   there will be top-level keys for each property in the top-level query of your UI. For Om to work right, anything
-  that might be shared in the UI (or is dealt with in persistence layers) should have an ident 
+  that might be shared in the UI (or is dealt with in persistence layers) should have an ident
   (see [the glossary](#!/om_tutorial.Z_Glossary)). We'll get to that in a minute.
-  
-  Remember from the section on Queries that when you co-locate queries on components, you may or may not 
-  have interstitial stateless components. 
+
+  Remember from the section on Queries that when you co-locate queries on components, you may or may not
+  have interstitial stateless components.
   The default database format is structured like the *query tree*. Anything that has a co-located query
-  should appear in the application state tree. 
+  should appear in the application state tree.
   This means your UI tree and query tree almost certainly will not match.
-  
+
   For example, if you had the following UI elements:
-  
+
   "
   (dc/mkdn-pprint-source C)
   (dc/mkdn-pprint-source c)
@@ -84,7 +84,7 @@
   (dc/mkdn-pprint-source A)
   (dc/mkdn-pprint-source a)
   "
-  
+
   you'd end up with this as the query: `(om/get-query A)`
   "
   (om/get-query A)
@@ -113,7 +113,7 @@
   But we're not done yet. What if two components on the screen happen to render different views of the same
   data? Any time you pull information from a server, it is possible someone might co-locate a query for it, and
   then you're screwed...updating one branch of the UI state tree will only cause one component to update.
-  
+
   In order for this to work well, you ideally want to have that shared data in your app state just once.
 
   So, the default Om database format encourages you to identify this kind of data and put the actual

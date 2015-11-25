@@ -50,7 +50,7 @@
   "Remove a person helper function"
   [id current-ppl-refs] (filterv #(not= id (second %)) current-ppl-refs))
 
-#_"Delete a person. Does an optimistic delete, and makes a request to the server. 
+#_"Delete a person. Does an optimistic delete, and makes a request to the server.
 
 We can do several possible things to deal with server response:
 - If error, we detect that in send

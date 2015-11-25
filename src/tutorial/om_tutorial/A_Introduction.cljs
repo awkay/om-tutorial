@@ -9,16 +9,16 @@
 
 (defcard-doc
   "# Introduction
-  
-  This tutorial will walk you through the various parts of Om 1.0 (alpha). In order to get the most from this 
+
+  This tutorial will walk you through the various parts of Om 1.0 (alpha). In order to get the most from this
   tutorial, you should understand the general goals of Om (next):
-  
+
   - Make it possible to localize application state in a single client database abstraction (e.g. single top-level atom
   holding a map)
   - Provide a mechanism whereby clients can make precise non-trivial reads simply and communicate non-trivial operations simply.
   - Eliminate the need for event models
   - Provide a synchronous programming model
-  
+
   There are others, but this is sufficient for a starting point.
 
   ## About This Tutorial
@@ -86,9 +86,9 @@
   fix the source and have all of the documentation automatically update.
 
   ## General Components of Om
-  
+
   The following significant areas of Om must be understood in order to write a non-trivial application.
-  
+
   - Building the UI.
   - Queries and the Query Grammar.
   - Colocating query fragments on stateful UI component (for composition and local reasoning).
@@ -97,7 +97,7 @@
   - Turning the Queries into remote requests for data.
   - Processing incoming responses to remote requests.
   - Dynamically changing Queries
-  
+
   [Let's start with the UI.](#!/om_tutorial.B_UI)
-  
+
   ")

@@ -32,7 +32,7 @@
 (defcard-doc
   "
   # UI
-  
+
   Om uses <a href=\"https://facebook.github.io/react/index.html\" target=\"_blank\">React</a> underneath.
   The primary mechanim for creating components is the `defui` macro:"
   (dc/mkdn-pprint-source Widget)
@@ -44,7 +44,7 @@
   `render` method is the only method you need, but you can also add in your own methods or React lifecycle methods.
 
   ## React Lifecycle Methods
-  
+
   If you wish to provide <a href=\"https://facebook.github.io/react/docs/component-specs.html#lifecycle-methods\"
   target=\"_blank\">lifecycle methods</a>, you can define them under the Object section of the UI:
   "
@@ -58,7 +58,7 @@
   (dc/mkdn-pprint-source widget)
   "Since they are plain React components you can render them in a <a href=\"https://github.com/bhauman/devcards#devcards\"
   target=\"_blank\">devcard</a>, which makes fine tuning them as pure UI dead simple:
-  
+
   ```
   (defcard widget-card (widget {}))
   ```
@@ -117,8 +117,8 @@
 (defcard-doc
   "
   ## Composing the UI
-  
-  Composing these is pretty straightforward: pull out the bits from props, and pass them on to subcomponents. 
+
+  Composing these is pretty straightforward: pull out the bits from props, and pass them on to subcomponents.
   "
   (dc/mkdn-pprint-source Person)
   (dc/mkdn-pprint-source PeopleList)
@@ -127,11 +127,11 @@
   (dc/mkdn-pprint-source person)
   (dc/mkdn-pprint-source root)
   "
-  
+
   ```
   (defcard root-render (root {:number 52 :people [{:name \"Sam\"} {:name \"Joe\"}]}))
   ```
-  
+
   It is important to note that _this is exactly how the composition of UI Components always happens_, independent of
   whether or not you use the rest of the features of Om. A root component calls the factory functions of subcomponents
   with an edn map as the first argument. That map is accessed using `om/props` on `this` within the subcomponent. Data

@@ -9,8 +9,8 @@
 
 (defcard-doc
   "# Glossary of Terms
-  
-  - `Default database format`: A tree of data where all of the objects that have an ident are replaced by that ident, and 
+
+  - `Default database format`: A tree of data where all of the objects that have an ident are replaced by that ident, and
     the actual data of those objects is moved to top-level Om-owned tables. See `om/tree->db`.
   - `Ident`: A unique identity, represented as a 2-tuple `vector` with a first element keyword. An ident need only
     be client unique, but will often be based on real server-persisted data. Examples might be `[:people/by-id 3]`
