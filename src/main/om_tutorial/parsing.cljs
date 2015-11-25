@@ -184,6 +184,20 @@
     {target response})
   )
 
+(defn- is-ui-query-fragment? [kw]
+  (when (keyword? kw)
+    (some->> kw namespace (re-find #"^ui(?:\.|$)"))))
+(defn- remove-ui-query-fragments [v]
+  (->> v
+       (remove is-ui-query-fragment?)
+       (remove #(when (list? %)
+                  (-> % first is-ui-query-fragment?)))
+       vec))
+(defn strip-ui [query]
+  (clojure.walk/prewalk #(if (vector? %)
+                           (remove-ui-query-fragments %) %)
+                        query))
+
 (defn recurse-remote
   "Recursively calls the parser on the subquery (which will completely determine the result of
   whether or not a remote request is needed). Call this when you want to delegate the remote
