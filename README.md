@@ -56,3 +56,15 @@ beginners. Bonus points if anyone wants to hack the cljs ecosystem so that code 
   e.g.,  http://www.cssscript.com/creating-simple-diagrams-with-nodes-and-links-using-svg-and-d3-js/
 - CSS for anything you think is too ugly
 
+## Figwheel notes
+
+I'm starting three builds at the same time in `start-dev`. Once the fighweel REPL is going, you can switch 
+to your build of interest (useful if you want to edit things and have quicker re-renders):
+
+The build IDs are "dev", "cards", and "tutorial". You can switch to a single one of these with a command like:
+
+```
+(switch-to-build "cards")
+```
+
+Now only the devcards part will hot reload.
