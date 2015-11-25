@@ -16,7 +16,7 @@ The organization is in flux. The top-level `src` directory contains:
 
 ## Running it
 
-There is a clojure script in the `script` folder. Simply run that in Cursive (Run..., Add a Clojure Local REPL, Run with Clojure Main (NOT nREPL!))
+You can run this tutorial in Cursive (Run..., Add a Clojure Local REPL, Run with Clojure Main (NOT nREPL!))
 or at the command line with:
 
 ```
