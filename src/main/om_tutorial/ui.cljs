@@ -7,7 +7,7 @@
 
 (defui Person
        static om/IQuery
-       (query [this] '[:ui/checked :db/id :person/name ])
+       (query [this] '[:ui/checked :db/id :person/name {:person/mate ...}])
        static om/Ident
        (ident [this {:keys [db/id]}] [:db/id id])
 
@@ -19,13 +19,12 @@
                          (dom/input #js {:type    "checkbox"
                                          ;; Toggle a boolean UI attribute. Must supply the attribute and ref of this
                                          :onClick #(om/transact! this `[(app/toggle-ui-boolean {:attr :ui/checked
-                                                                                                :ref  [:db/id ~id]})
-                                                                        [:db/id ~(:db/id mate)]
-                                                                        ])
+                                                                                                :ref  [:db/id ~id]})])
                                          :checked (boolean checked)})
                          name
                          (when onDelete (dom/button #js {:onClick #(onDelete id)} "X"))
-                         (when (and mate (not rendered-mate)) (dom/ul nil (person (om/computed mate {:rendered-mate true}))))
+                         (when (and mate (not rendered-mate))
+                           (dom/ul nil (person (om/computed mate {:rendered-mate true}))))
                          ))))
 
 (def person (om/factory Person {:keyfn :db/id}))

@@ -167,7 +167,7 @@
     (let [uikey (ui-key ref)
           node (get-in @state uikey)
           value (get node key)]
-      (if value {:value value} nil)
+      (when value {:value value})
       )))
 
 (defn elide-empty-query
