@@ -11,6 +11,30 @@
             [devcards.core :as dc]
             ))
 
+(let [people-query [:ui.people/checked :db/id :person/name {:people '...}]]
+  (dc/deftest strip-ui
+    "Strips from query any keyword that has a ui namespace"
+
+    "is-ui-query-fragment? propertly detects if its a ui keywords"
+    (is (#'p/is-ui-query-fragment? :ui.people/by-id))
+    (is (#'p/is-ui-query-fragment? :ui/by-id))
+    (is (not (#'p/is-ui-query-fragment? :my.ui/person)))
+    (is (not (#'p/is-ui-query-fragment? :uix/person)))
+    (is (not (#'p/is-ui-query-fragment? :new-person)))
+    (is (not (#'p/is-ui-query-fragment? "ui/by-id ")))
+    (is (not (#'p/is-ui-query-fragment? 36)))
+    (is (not (#'p/is-ui-query-fragment? 'ui.foo/bar)))
+
+    "remove-ui-query-fragments removes all ui-query-fragments from a vector"
+    (is (= [:db/id :person/name {:people '...}]
+           (#'p/remove-ui-query-fragments people-query)))
+
+    "strip-ui removes all nested ui-query-fragments that are in vectors"
+    (is (= [{:widget [{:people (remove #{:ui.people/checked}
+                                       people-query)}]}]
+           (p/strip-ui [{:widget [{:people people-query}]}])))
+    ))
+
 (let [env {:db-path []}
       env' (p/descend env :a)
       env'' (p/descend env' :b)
