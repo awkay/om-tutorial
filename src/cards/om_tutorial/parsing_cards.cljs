@@ -117,3 +117,64 @@
                     (get (core/parser env [{[:db/id 2] (om/get-query ui/Person)}]) [:db/id 2])
                     ))
               ))
+
+(defn read [e k p] {:value 42})
+(defn mutate [e k p]
+  {:value  {:keys    [:a :b]
+            :tempids {[:db/id 0] [:db/id 1]}
+            :result  {:value-result 1}
+            }
+   :action (fn []
+             {:action-result 2
+              :tempids       {[:db/id 999] [:db/id 454]}})
+   })
+(def mutation-test-parser (om/parser {:read read :mutate mutate}))
+
+;; {:value {:keys … :tempids … :result ...} :action (fn [] ..)}
+(let [state (atom {})]
+  (dc/deftest mutation-rv
+              (is (= [] (mutation-test-parser {:state state} '[(f {:k 3})])))
+              (is (= {} @state))
+
+              ))
+
+(defui Thing
+       static om/Ident
+       (ident [this {:keys [thing-id]}] [:thing thing-id])
+       static om/IQuery
+       (query [this] [:thing/value]))
+
+(defui Widget
+       static om/Ident
+       (ident [this {:keys [widget-id]}] [:widget widget-id])
+       static om/IQueryParams
+       (params [this] {:thing-query {[:thing 9] (om/get-query Thing)}})
+       static om/IQuery
+       (query [this] [:widget/value '?thing-query]))
+
+(defui Root
+       static om/IQuery
+       (query [this] [{[:widget 42] (om/get-query Widget)}]))
+
+(defn id-read [{:keys [ast read-path node state parser query] :as env} k p]
+  (let [{:keys [key type query]} ast
+        path (conj read-path key)]
+    (println "READ" read-path)
+    (if (om/ref? key)
+      {:value (parser (assoc env :read-path path :node (get-in @state key)) query)}
+      (do
+        (println "value: " (get node key))
+        {:value (get node key nil)})
+      )
+
+
+    ))
+(def ident-test-parser (om/parser {:read id-read}))
+
+(let [state (atom (om/tree->db Root { [:widget 42] {:widget-id 42 :widget/value 6 [:thing 9] {:thing-id 9 :thing/value 99}}} true))]
+  (dc/deftest using-ident
+              (is (= [] (om/get-query Root)))
+              (is (= [] (ident-test-parser {:state state :read-path [] :node @state} (om/get-query Root))))
+              (is (= {} @state))
+
+              ))

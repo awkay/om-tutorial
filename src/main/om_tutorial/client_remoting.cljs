@@ -8,11 +8,12 @@
 
   The helper functions `recurse-remote` and `fetch-if-missing` take a good deal of the complexity out.
   "
-  [env key params]
+  [{:keys [ast] :as env} key params]
+  (println "ENTER READ REMOTE: " key)
   (case key
     :widget (p/recurse-remote env key true)
     :people (p/fetch-if-missing env key :make-root)
-    :not-remote                                             ; prune everything else from the parse
+    (println "PRUNED: " key) ; prune everything else from the parse
     )
   )
 
@@ -20,13 +21,14 @@
 
 (defn send [remote-queries cb]
   (let [payload (:my-server remote-queries)
-        {:keys [query rewrite]} (om/process-roots (dbg payload)) ;; FIXME: BUG: process-roots should NOT return empty!
+        {:keys [query rewrite]} (om/process-roots payload)
         _ (println "Suggested query: " payload)
         _ (println "REMOTE payload (after re-root): " query)
         server-response (simulated-server query)
         ]
     (js/setTimeout (fn []
                      (println "SERVER response is: " server-response)
+                     (println "state to merge " (rewrite server-response))
                      (cb (rewrite server-response))
                      ) 100)
     )

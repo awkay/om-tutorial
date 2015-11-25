@@ -11,8 +11,10 @@
   (e.g. `{:remote (fn [e k p] ...)}`)
   "
   [default-local-read remote-read-map]
-  (fn [{:keys [target state reader] :as env} key params]
-    (let [env' (if (contains? env :db-path) env (assoc env :db-path []))]
+  (fn [{:keys [target ast reader] :as env} key params]
+    (let [env' (if (contains? env :db-path) (update-in env [:query-path] conj (:key ast))
+                                            (assoc env :query-path [key] :db-path []))]
+      (println "Query path (target: " target "): " (:query-path env'))
       (cond
         reader (reader env' key params)
         (contains? remote-read-map target) ((get remote-read-map target) env' key params)
@@ -87,7 +89,9 @@
   "Exactly equivalent to {:value (dbget env key nil)}. Useful as immediate return value of read."
   [env key]
   (if-let [v (dbget env key nil)]
-    {:value v}
+    (do
+      (println "FOUND " v " at " (:query-path env))
+      {:value v})
     nil
     ))
 
@@ -208,6 +212,7 @@
   'real' server query.
   "
   [{:keys [target ast parser] :as env} key descend?]
+  (println "REMOTE recurse on " ast)
   (let [env' (if descend? (descend env key) env)]
     (elide-empty-query target (update-in ast [:query] #(parser env' % target)))))
 
@@ -228,7 +233,7 @@
   (let [cached-read-ok? (not (= target (:target ast)))
         value (dbget env key nil)
         as-root? (or (true? as-root?) (= :make-root as-root?))]
-    (println "FETCH " ast " as root? " as-root?)
+    (println "remote FETCH if missing. cached-ok? " cached-read-ok? " ast:" ast " as root? " as-root?)
     (if (and cached-read-ok? (not= nil value))
       nil
       {target
