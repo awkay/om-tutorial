@@ -29,8 +29,8 @@
   - Action method on server-side must be the thing that figures out the new ID (side-effect free). The return value
   of the action methods ends up as :result on parser return...you must post-process that or you'll send the wrong
   stuff to the client.
-  - See simulated-server for hints on how to fix up the results of mutation parses
-  - You MUST set :id-key on reconciler to the ID key used by the actual objects to be migrated, since the ident need
+  - See `simulated-server` for hints on how to fix up the results of mutation parses
+  - You MUST set `:id-key` on reconciler to the ID key used by the actual objects to be migrated, since the ident need
   not use that key (idents are a client-local concern)
 
   ")
