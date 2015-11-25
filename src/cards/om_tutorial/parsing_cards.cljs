@@ -33,6 +33,10 @@
     (is (= [{:widget [{:people (remove #{:ui.people/checked}
                                        people-query)}]}]
            (p/strip-ui [{:widget [{:people people-query}]}])))
+
+    "strip-ui removes any properties 'called' with params"
+    (is (= [{:widget [{:people []}]}]
+           (p/strip-ui [{:widget [{:people ['(:ui.people/prop {:some :params})]}]}])))
     ))
 
 (let [env {:db-path []}

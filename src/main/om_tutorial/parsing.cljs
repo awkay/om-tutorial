@@ -188,7 +188,11 @@
   (when (keyword? kw)
     (some->> kw namespace (re-find #"^ui(?:\.|$)"))))
 (defn- remove-ui-query-fragments [v]
-  (->> v (remove is-ui-query-fragment?) vec))
+  (->> v
+       (remove is-ui-query-fragment?)
+       (remove #(when (list? %)
+                  (-> % first is-ui-query-fragment?)))
+       vec))
 (defn strip-ui [query]
   (clojure.walk/prewalk #(if (vector? %)
                            (remove-ui-query-fragments %) %)
