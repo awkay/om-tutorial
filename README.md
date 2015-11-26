@@ -1,6 +1,6 @@
 # Om Tutorial Code
 
-# IMPORTANT: Om alpha 24 makes parsing/read easier...this tutorial in being updated...
+# IMPORTANT: Om alpha 24 makes parsing/read easier. See notes in section on Reads and Parsing
 
 This is a project holding an Om (next) project that is to be used
 as the basis of a complete overview of the features of Om. For 
