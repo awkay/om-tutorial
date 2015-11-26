@@ -11,10 +11,14 @@
   {:action (fn [] (swap! state assoc :new-person value))}
   )
 
+(defn ref-to-id [r] (if (om/ident? r) (second r) r))
+(defn obj-deref [obj] (into {} (map (fn [[k v]] [k (ref-to-id v)])) obj))
+
 (defmethod mutate 'app/save
   [{:keys [state ast] :as env} k {:keys [name]}]
   (println "Locale Mutate " ast)
-  (let [save-ast (assoc ast :params (get @state :db/id))]
+  (let [save-ast (assoc ast :params (mapv obj-deref (vals (get @state :db/id))))]
+    (println "Locale Mutate " save-ast)
     {
      :my-server save-ast
      })
@@ -50,20 +54,12 @@
   "Remove a person helper function"
   [id current-ppl-refs] (filterv #(not= id (second %)) current-ppl-refs))
 
-#_"Delete a person. Does an optimistic delete, and makes a request to the server.
-
-We can do several possible things to deal with server response:
-- If error, we detect that in send
-   - could add a message to the UI/trigger re-read of all ppl.
-   - could keep track of the delete, and undo it (w/UI message)
-   - server error could include new state???
-"
 (defmethod mutate 'app/delete-person
   [{:keys [state ast] :as env} k {:keys [db/id]}]
+  (println "delete " ast)
   {:my-server ast
    :action    (fn []
-                (println "Optimistic delete of " id " " (remove-person id (-> @state :people)))
-                (swap! state update-in [:widget :people] (partial remove-person id))
+               ; (swap! state update-in [:widget :people] (partial remove-person id))
                 )
    })
 

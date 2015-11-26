@@ -15,8 +15,7 @@
 (def initial-state {:last-error "" :new-person ""
                     ; Structure the UI state like the UI composes. Persistent (Ident) objects will become refs on normalization
                     :widget     {
-                                 :people [{:db/id 1 :person/name "Tony" :garbage 1 :person/mate {:db/id 2 :person/name "Jane"}}
-                                          {:db/id 2 :person/name "Jane" :garbage 2 :person/mate {:db/id 1 :person/name "Tony"}}]}
+                                 :people nil}
                     ; storage for UI concerns for object with idents like [:db/id n]
                     ; UI tables will be named by adding ui. to the namespace of the ref keyword in the ident.
                     ; See om-tutorial.client-mutation/toggle-ui-boolean for a mutation

@@ -1,15 +1,28 @@
 (ns om-tutorial.simulated-server
   (:require
     [om.tempid :as t]
+    [datascript.core :as d]
     [om.next :as om]))
 
 ;; SIMULATE SERVER ON THE CLIENT
 ;; Remember that the server uses the same parser code as the client, so we can write it all client-side to play with it!
 
-(defonce server-state (atom {:people [{:db/id 1 :person/name "Sam"} {:db/id 2 :person/name "Tammy"}]}))
+(def server-state (do
+                    (let [schema {:person/mate {:db/cardinality :db.cardinality/one}}
+                          conn (d/create-conn schema)]
+                      (d/transact conn
+                                  [{:db/id 1 :person/name "Sam" :person/mate 2}
+                                   {:db/id 2 :person/name "Tammy" :person/mate 1}])
+                      conn)))
 
 (defmulti server-read om/dispatch)
-(defmethod server-read :people [{:keys [state]} k p] {:value (-> @state k)})
+(defmethod server-read :people [{:keys [query]} k p]
+  {:value
+   (d/q '[:find [(pull ?e ?q) ...]
+          :in $ ?q
+          :where [$ ?e :person/name ?v] ;; all entities with a person/name
+          ] (d/db server-state) query)})
+
 (defmethod server-read :default [env k p] :not-found)
 
 (defmulti server-mutate om/dispatch)
@@ -27,11 +40,12 @@
 
 (def next-id (atom 1000))
 
+;; {:value {:keys … :tempids … :result ...} :action (fn [] ..)}
 (defmethod server-mutate 'app/save [{:keys [db state ast] :as env} k params]
   {
-   :value  {:saved true}
+   :value  {:keys [:people]}
    :action (fn []
-             (let [incoming-items (vals params)
+             (let [incoming-items params
                    tempids (keep #(when (is-tempid? (:db/id %)) (:db/id %)) incoming-items)
                    remaps (reduce merge {} (map (fn [tid]
                                                   (swap! next-id inc)
@@ -47,11 +61,13 @@
                ))})
 
 
-(defmethod server-mutate 'app/delete-person [{:keys [state ast] :as env} k {:keys [name]}]
+(defmethod server-mutate 'app/delete-person [{:keys [state ast] :as env} k {:keys [db/id name]}]
   {
-   ; Action here is a thunk, because parse MUST be side-effect free.
+   :value  {:keys [:people]}
    :action (fn []
-             (println "SERVER ASKED TO DELETE")
+             (println "SERVER ASKED TO DELETE" id)
+             (d/transact server-state [[:db.fn/retractEntity id]])
+             nil
              )
    })
 
@@ -69,8 +85,16 @@
   and the return value is what would be placed in the payload of the response.
   "
   [query]
-  (let [resp (server-parser {:state server-state} query)
-        resp' (into {} (map (fn [[k v]] [k (pull-up-ids k v)]) resp))]
-    resp'))
+  (let [resp (server-parser {:state server-state} query)]
+      ;  resp' (into {} (map (fn [[k v]] [k (pull-up-ids k v)]) resp))]
+    resp))
 
 
+(comment
+  (d/db server-state)
+  (d/pull (d/db server-state) [:person/name {:person/mate '...}] 1)
+  (d/q '[:find (pull ?e ?q)
+         :in $ ?q
+         :where [$ ?e :person/name ?v]
+         ] (d/db server-state) [:person/name {:person/mate '...}])
+  )

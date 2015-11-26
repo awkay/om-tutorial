@@ -35,7 +35,8 @@
        Object
        (render [this]
                (let [people (-> (om/props this) :people)
-                     deletePerson (fn [id] (om/transact! this `[(app/delete-person {:db/id ~id}) :people]))]
+                     deletePerson (fn [id] (om/transact! this `[(app/delete-person {:db/id ~id})
+                                                                ~(om/force :people :my-server)]))]
                  (dom/div nil
                           (if (= nil people)
                             (dom/span nil "Loading...")
