@@ -18,17 +18,11 @@ The organization is in flux. The top-level `src` directory contains:
 
 ## Running it
 
-There is a clojure script in the `script` folder. Simply run that in Cursive (Run..., Add a Clojure Local REPL, Run with Clojure Main (NOT nREPL!))
+There is a clojure script in the `script` folder. You can run it with `lein` or in Cursive (Run..., Add a Clojure Local REPL, Run with Clojure Main (NOT nREPL!), parameters `script/figwheel.clj`)
 or at the command line with:
 
 ```
-lein run -m clojure.main
-```
-
-at that REPL, run:
-
-```
-user=> (start-dev)
+lein run -m clojure.main script/figwheel.clj
 ```
 
 Then browse to all of the following URLs in separate tabs:
@@ -38,10 +32,6 @@ http://localhost:3450/tutorial.html   - Devcards-based Tutorial (start here)
 http://localhost:3450/                - Main app
 http://localhost:3450/cards.html      - Devcards (tests) UI
 ```
-
-I have it set up this way because later I'm going to add support for running both an nREPL and fighweel REPL
-from the same JVM, and this makes it easier to do. You can edit the `src/dev/user.clj` if you like, and put
-`(start-dev)` at the bottom to avoid having to manually start it.
 
 For now, feel free to browse the source of the demo app, or follow the pages in the tutorial.
 
