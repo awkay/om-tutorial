@@ -11,7 +11,7 @@
   {:action (fn [] (swap! state assoc :new-person value))}
   )
 
-(defn ref-to-id [r] (if (om/ref? r) (second r) r))
+(defn ref-to-id [r] (if (om/ident? r) (second r) r))
 (defn obj-deref [obj] (into {} (map (fn [[k v]] [k (ref-to-id v)])) obj))
 
 (defmethod mutate 'app/save

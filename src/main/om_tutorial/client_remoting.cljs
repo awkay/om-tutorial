@@ -9,7 +9,7 @@
   The helper functions `recurse-remote` and `fetch-if-missing` take a good deal of the complexity out.
   "
   [{:keys [ast] :as env} key params]
-  (println "ENTER READ REMOTE: " key)
+  (println "ENTER READ REMOTE: " (dissoc ast :children))
   (case key
     :widget (p/recurse-remote env key true)
     :people (p/fetch-if-missing env key :make-root)

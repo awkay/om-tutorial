@@ -14,7 +14,7 @@
   (fn [{:keys [target ast reader] :as env} key params]
     (let [env' (if (contains? env :db-path) (update-in env [:query-path] conj (:key ast))
                                             (assoc env :query-path [key] :db-path []))]
-      (println "Query path (target: " target "): " (:query-path env'))
+      ;(println "Query path (target: " target "): " (:query-path env'))
       (cond
         reader (reader env' key params)
         (contains? remote-read-map target) ((get remote-read-map target) env' key params)
@@ -31,7 +31,7 @@
    db-path to be rooted at that ref.
   "
   [env key]
-  (if (om/ref? key)
+  (if (om/ident? key)
     (assoc env :db-path [key])
     (update-in env [:db-path] conj key)))
 
@@ -54,7 +54,7 @@
 (defn follow-ref
   "Follow the given ref in the env, or just return the obj if it is not a ref."
   [{:keys [state]} obj-or-ref]
-  (if (om/ref? obj-or-ref)
+  (if (om/ident? obj-or-ref)
     (get-in @state obj-or-ref)
     obj-or-ref
     ))
@@ -68,7 +68,7 @@
     (if (empty? path)
       node
       (let [k (first path)
-            v (if (om/ref? k) (get-in @state k) (follow-ref env (get node k)))]
+            v (if (om/ident? k) (get-in @state k) (follow-ref env (get node k)))]
         (recur v (rest path))
         ))))
 
@@ -78,7 +78,7 @@
   Follows refs (in the db-path variable OR the app state) to top-level tables."
   ([env key] (dbget env key nil))
   ([{:keys [state db-path] :as env} key dflt]
-   (if (om/ref? key)
+   (if (om/ident? key)
      (get-in @state key dflt)
      (let [node-state (get-in-db-path env)
            value (get node-state key dflt)]
@@ -90,7 +90,7 @@
   [env key]
   (if-let [v (dbget env key nil)]
     (do
-      (println "FOUND " v " at " (:query-path env))
+      ;(println "FOUND " v " at " (:query-path env))
       {:value v})
     nil
     ))
@@ -145,12 +145,12 @@
   [{:keys [db-path state] :as env}]
   (loop [node @state path db-path]
     (let [k (first path)
-          v (if (om/ref? k) (get-in @state k) (get node k))
+          v (if (om/ident? k) (get-in @state k) (get node k))
           v' (follow-ref env (get node k))]
       (if (= 1 (count path))
         (cond
-          (om/ref? k) k
-          (om/ref? v) v
+          (om/ident? k) k
+          (om/ident? v) v
           :else nil)
         (recur v' (rest path))
         ))))
@@ -212,9 +212,11 @@
   'real' server query.
   "
   [{:keys [target ast parser] :as env} key descend?]
-  (println "REMOTE recurse on " ast)
+  (println "REMOTE recurse " target " on " ast)
   (let [env' (if descend? (descend env key) env)]
-    (elide-empty-query target (update-in ast [:query] #(parser env' % target)))))
+    (elide-empty-query target (update-in ast [:query] #(let [v (parser env' % target)]
+                                                        (println "Calling parser on " % ". target: " target " Got: " v)
+                                                        v)))))
 
 (defn fetch-if-missing
   "Terminate the descent of the parse and indicate the rest of the sub-query should run against the target indicated

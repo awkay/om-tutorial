@@ -160,7 +160,7 @@
   (let [{:keys [key type query]} ast
         path (conj read-path key)]
     (println "READ" read-path)
-    (if (om/ref? key)
+    (if (om/ident? key)
       {:value (parser (assoc env :read-path path :node (get-in @state key)) query)}
       (do
         (println "value: " (get node key))

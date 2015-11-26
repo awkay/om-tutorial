@@ -6,7 +6,7 @@
   "The function used by our Om parser to read local app state."
   [{:keys [query ast db-path] :as env} key params]
   (case key
-    :db/id (if (om/ref? (:key ast))
+    :db/id (if (om/ident? (:key ast))
              {:value (p/parse-join-with-reader read-local (assoc env :db-path []) (:key ast))}
              (p/db-value env key)
              )
