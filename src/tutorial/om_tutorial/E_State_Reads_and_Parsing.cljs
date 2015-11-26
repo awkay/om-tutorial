@@ -4,8 +4,60 @@
     )
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
-            [devcards.core :as dc :refer-macros [defcard defcard-doc]]
+            [devcards.core :as dc :refer-macros [defcard defcard-doc deftest]]
             ))
+
+(let [sam {:db/id 1 :person/name "Sam" :person/mate [:people/by-id 2]}
+      jenny {:db/id 2 :person/name "Jenny" :person/mate [:people/by-id 1]}
+      app-state {:widget/people [[:people/by-id 1] [:people/by-id 2]]
+                 :people/by-id  {1 sam 2 jenny}
+                 }]
+  (defcard-doc
+    "
+    # Using `db->tree`
+
+    You can do a lot of work to build parsing and reads, but Om comes with a very nice function for turning a UI query
+    into the desired data from a normalized (default-format) database. With liberal use of idents as links in the graph
+    almost all of your real state can be at the \"top\"  of the actual application state database.
+
+    For example, given app state (the following are live tests you can play with in the source of this file):
+    "
+    app-state
+    )
+  (deftest db-tree-tests
+           "
+           - You can read a top-level ident query (no id part, special use of `_`):
+           ```
+           (om/db->tree '[[:widget/people _]] app-state app-state))) => {:widget/people [{:db/id 1, :person/name \"Sam\", :person/mate [:people/by-id 2]} {:db/id 2, :person/name \"Jenny\", :person/mate [:people/by-id 1]}]}
+           ```
+           "
+           (is (= {:widget/people [sam jenny]} (om/db->tree '[[:widget/people _]] app-state app-state)))
+           "- You can read a simple ident query with full ID:
+
+           ```
+           (om/db->tree '[[:people/by-id 2]] app-state app-state) => {[:people/by-id 2] {:db/id 2, :person/name \"Jenny\", :person/mate [:people/by-id 1]}}
+           ```
+           "
+           (is (= {[:people/by-id 2] jenny} (om/db->tree '[[:people/by-id 2]] app-state app-state)))
+           "- You can use an ident as the key to a join, and follow the graph to generate more of a tree:
+
+           ```
+           (om/db->tree '[{[:people/by-id 1] [:person/name {:person/mate [:person/name]}]}] app-state app-state) => {[:people/by-id 1] {:person/name \"Sam\", :person/mate {:person/name \"Jenny\"}}}
+           ```
+           "
+           (is (= {[:people/by-id 1] {:person/name "Sam", :person/mate {:person/name "Jenny"}}}
+                  (om/db->tree '[{[:people/by-id 1] [:person/name {:person/mate [:person/name]}]}] app-state app-state)))
+           "- And you can even have a query-prefix of UI-related keys that are not even in the app-state database!
+
+
+           ```
+           (om/db->tree '[{:root-ui [{:widget [{[:people/by-id 1] [:db/id :person/name]}]}]}] app-state app-state) => {:root-ui {:widget {[:people/by-id 1] {:db/id 1, :person/name \"Sam\"}}}}
+           ```
+           "
+
+           (is (= {:root-ui {:widget {[:people/by-id 1] {:db/id 1, :person/name "Sam"}}}}
+                  (om/db->tree '[{:root-ui [{:widget [{[:people/by-id 1] [:db/id :person/name]}]}]}] app-state app-state)))
+           ))
 
 (defcard-doc
   "
