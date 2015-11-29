@@ -16,12 +16,9 @@
 
 (defmethod mutate 'app/save
   [{:keys [state ast] :as env} k {:keys [name]}]
-  (println "Locale Mutate " ast)
-  (let [save-ast (assoc ast :params (mapv obj-deref (vals (get @state :db/id))))]
-    (println "Locale Mutate " save-ast)
-    {
-     :my-server save-ast
-     })
+  ;; rewrite the save params using local state
+  (let [save-ast (assoc ast :params {:people (mapv obj-deref (vals (get @state :db/id)))})]
+    { :my-server save-ast })
   )
 
 ;"Clear the people, which will trigger a re-read from remote."

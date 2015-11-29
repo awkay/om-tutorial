@@ -1,5 +1,5 @@
 (ns om-tutorial.parsing
-  (:require [om.next :as om]))
+  (:require [cljs.pprint :refer [pprint]] [om.next :as om]))
 
 (defn dbg [msg v] (println msg v) v)
 
@@ -214,6 +214,8 @@
   [{:keys [target ast parser] :as env} key descend?]
   (println "REMOTE recurse " target " on " ast)
   (let [env' (if descend? (descend env key) env)]
+    (if (:target ast) "FORCED REMOTE READ")
+    (pprint ast)
     (elide-empty-query target (update-in ast [:query] #(let [v (parser env' % target)]
                                                         (println "Calling parser on " % ". target: " target " Got: " v)
                                                         v)))))

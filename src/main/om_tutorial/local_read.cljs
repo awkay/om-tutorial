@@ -6,14 +6,14 @@
   "The function used by our Om parser to read local app state."
   [{:keys [query ast db-path] :as env} key params]
   (case key
+    ;; distinguish between an ident lookup (which is a join to root table) and an on-object db/id lookup (property)
     :db/id (if (om/ident? (:key ast))
              {:value (p/parse-join-with-reader read-local (assoc env :db-path []) (:key ast))}
              (p/db-value env key)
              )
     :ui/checked (p/ui-attribute env key)
-    ;; needed to bump recursion limit due to possible path optimization path starting point
-    :person/mate (when-not (:mate-read env) {:value (p/parse-join-with-reader read-local (assoc env :mate-read true) key)})
-    :people {:value (p/parse-join-with-reader read-local env key)}
+    :person/mate {:value (p/parse-join-with-reader read-local env key :limit 2)}
+    :people {:value (p/parse-join-with-reader read-local env key :reset-depth 0)}
     :widget {:value (p/parse-join-with-reader read-local env key)}
     (p/db-value env key)
     ))

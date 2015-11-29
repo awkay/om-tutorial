@@ -14,17 +14,21 @@
 
 (def initial-state {:last-error "" :new-person ""
                     ; Structure the UI state like the UI composes. Persistent (Ident) objects will become refs on normalization
-                    :widget     {
-                                 :people nil}
+                    :widget     {:people [
+                                          {:db/id 1 :person/name "Linda" :person/mate {:db/id 2 :person/name "Tommy"}}
+                                          {:db/id 2 :person/name "Tommy" :person/mate {:db/id 1 :person/name "Linda"}}
+                                          ]}
                     ; storage for UI concerns for object with idents like [:db/id n]
                     ; UI tables will be named by adding ui. to the namespace of the ref keyword in the ident.
                     ; See om-tutorial.client-mutation/toggle-ui-boolean for a mutation
                     ; See om-tutorial.local-read/read-local for an example of how to read
-                    :ui.db/id   {} #_{
+                    :ui.db/id   {
                                  1 {:ui.db/id 1 :ui/checked false}
                                  2 {:ui.db/id 2 :ui/checked true}
                                  }
                     })
+
+(def normalized-state (om/tree->db ui/Root initial-state true))
 
 ; The new-read-entry-point gives you SAX-style parsing, and separates the local parser from the remote fetch one(s)
 ; No more complected logic!
