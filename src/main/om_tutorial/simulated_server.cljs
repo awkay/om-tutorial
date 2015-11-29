@@ -7,6 +7,7 @@
 ;; SIMULATE SERVER ON THE CLIENT
 ;; Remember that the server uses the same parser code as the client, so we can write it all client-side to play with it!
 
+;; Pretend we're using Datomic, and have some initial data
 (def server-state (do
                     (let [schema {:person/mate {:db/cardinality :db.cardinality/one}}
                           conn (d/create-conn schema)]
@@ -27,18 +28,7 @@
 
 (defmulti server-mutate om/dispatch)
 
-(defmethod server-mutate 'app/add-person [{:keys [db state ast] :as env} k {:keys [name]}]
-  {
-   ; TODO: :tempids { [:db/id tmpid] [:db/id 4]}
-   ; Action here is a thunk, because parse MUST be side-effect free.
-   :action (fn []
-             ; TODO: Server add
-             )
-   })
-
 (defn is-tempid? [id] (= om.tempid/TempId (type id)))
-
-(def next-id (atom 1000))
 
 (defn save-people [people]
   (let [all-ids (map :db/id people)
@@ -59,7 +49,6 @@
 
 ;; {:value {:keys … :tempids … :result ...} :action (fn [] ..)}
 (defmethod server-mutate 'app/save [{:keys [db state ast] :as env} k params]
-  (println "Save params: " params)
   {:value  {:keys [:people]}
    :action #(save-people (:people params))})
 
@@ -75,10 +64,13 @@
 
 (def server-parser (om/parser {:read server-read :mutate server-mutate}))
 
-(defn pull-up-ids [k v]
-  (println "pull " k v)
+(defn pull-up-ids
+  "Return values of functions come back in result. Pulls the id remaps up a level."
+  [k v]
   (case k
-    'app/save (:result v)
+    'app/save (-> v
+                  (merge (:result v))
+                  (dissoc :result))
     v)
   )
 
@@ -91,15 +83,4 @@
   (let [resp (server-parser {:state server-state} query)
     resp' (into {} (map (fn [[k v]] [k (pull-up-ids k v)]) resp))]
     resp'))
-
-
-(comment
-  (d/tempid :db.part/user)
-  (d/db server-state)
-  (d/pull (d/db server-state) [:person/name {:person/mate '...}] 1)
-  (d/q '[:find (pull ?e ?q)
-         :in $ ?q
-         :where [$ ?e :person/name ?v]
-         ] (d/db server-state) [:person/name {:person/mate '...}])
-  )
 
