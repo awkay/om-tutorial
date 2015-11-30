@@ -10,26 +10,25 @@
 (declare person)
 
 (defui Person
-       static om/IQuery
-       (query [this] '[:ui/checked :db/id :person/name {:person/mate ...}])
-       static om/Ident
-       (ident [this {:keys [db/id]}] [:db/id id])
-
+       ;; TODO: Add a query for :db/id, :person/name, and a recursive access of :person/mate
+       ;; TODO: Add an ident that uses :db/id
        Object
+       (initLocalState [this] { :checked false })
        (render [this]
-               (let [{:keys [ui/checked db/id person/name person/mate]} (om/props this)
-                     {:keys [onDelete rendered-mate]} (om/get-computed this)]
+               (let [{:keys [person/name person/mate]} (om/props this)
+                     checked (om/get-state this :checked)]
                  (dom/li nil
-                         (dom/input #js {:type    "checkbox"
-                                         ;; Toggle a boolean UI attribute. Must supply the attribute and ref of this
-                                         :onClick #(om/transact! this `[(app/toggle-ui-boolean {:attr :ui/checked
-                                                                                                :ref  [:db/id ~id]})])
-                                         :checked (boolean checked)})
-                         name
-                         (when onDelete (dom/button #js {:onClick #(onDelete id)} "X"))
-                         (when (and mate (not rendered-mate))
-                           (dom/ul nil (person (om/computed mate {:rendered-mate true}))))
-                         ))))
+                         (dom/input #js {:type "checkbox"
+                                         :onClick #(om/update-state! this update :checked not)
+                                         :checked (om/get-state this :checked)
+                                         })
+                         (if checked
+                           (dom/b nil name)
+                           (dom/span nil name))
+                         (dom/button nil "X")
+                         (when mate (dom/ul nil (om-person mate)))
+                         )))
+       )
 
 (def person (om/factory Person {:keyfn :db/id}))
 
@@ -38,15 +37,13 @@
        (query [this] `[{:people ~(om/get-query Person)}])
        Object
        (render [this]
-               (let [people (-> (om/props this) :people)
-                     deletePerson (fn [id] (om/transact! this `[(app/delete-person {:db/id ~id})
-                                                                ~(om/force :people :my-server)]))]
+               (let [people (-> (om/props this) :people)]
                  (dom/div nil
                           (if (= nil people)
                             (dom/span nil "Loading...")
                             (dom/div nil
-                                     (dom/button #js {:onClick #(om/transact! this '[(app/save)])} "Save")
-                                     (dom/button #js {:onClick #(om/transact! this '[(app/refresh) :people])} "Refresh List")
+                                     (dom/button #js {} "Save")
+                                     (dom/button #js {} "Refresh List")
                                      (dom/ul nil (map #(person (om/computed % {:onDelete deletePerson})) people))))
                           )
                  )
