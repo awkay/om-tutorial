@@ -2,6 +2,7 @@
   (:require [om-tutorial.parsing :as p]
             [om.next :as om]))
 
+(defn dbg [v] (println v) v)
 (defn read-local
   "The function used by our Om parser to read local app state."
   [{:keys [query ast db-path] :as env} key params]
@@ -17,7 +18,6 @@
     :widget {:value (p/parse-join-with-reader read-local env key)}
     (p/db-value env key)
     ))
-
 
 (comment
   (defn generic-read-local

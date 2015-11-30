@@ -40,7 +40,6 @@
                                                                     (conj possible-collection value)
                                                                     [value]
                                                                     ))]
-               (println "Optimistic add " name " w/tempid " temp-id)
                (swap! state assoc :new-person "")
                (swap! state update-in [:db/id] assoc temp-id {:db/id temp-id :person/name name})
                (swap! state update-in [:widget :people] create-or-conj [:db/id temp-id]))

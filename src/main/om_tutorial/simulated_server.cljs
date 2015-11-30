@@ -56,7 +56,7 @@
   {
    :value  {:keys [:people]}
    :action (fn []
-             (println "SERVER ASKED TO DELETE" id)
+             ;(println "SERVER ASKED TO DELETE" id)
              (d/transact server-state [[:db.fn/retractEntity id]])
              nil
              )
