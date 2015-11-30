@@ -28,8 +28,8 @@ lein run -m clojure.main script/figwheel.clj
 Then browse to all of the following URLs in separate tabs:
 
 ```
+http://localhost:3450/                - Main app ; BROKEN, waiting on bug fixes Om-495 and Om-503
 http://localhost:3450/tutorial.html   - Devcards-based Tutorial (start here)
-http://localhost:3450/                - Main app
 http://localhost:3450/cards.html      - Devcards (tests) UI
 ```
 
