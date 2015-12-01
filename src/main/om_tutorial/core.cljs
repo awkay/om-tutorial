@@ -35,11 +35,18 @@
 (def parser (om/parser {:read   (p/new-read-entry-point local/read-local {:my-server remote/read-remote})
                         :mutate m/mutate}))
 
+(defn resolve-tempids [state tid->rid]
+  (clojure.walk/prewalk #(if (-> % type (= om.tempid/TempId))
+                          (get tid->rid %) %)
+                        state))
+
+(defn tempid-migrate [pure query tempids id-key] (resolve-tempids pure tempids))
+
 (defonce reconciler (let [rv (om/reconciler {:state   initial-state
                                           :parser  parser
                                           :id-key  :db/id   ; REQUIRED for tempid migration to work
                                           :remotes [:my-server]
-                                          :migrate om/default-migrate ; Override if you want tempid migration to not stomp on non-UI cached state
+                                          :migrate tempid-migrate
                                           :pathopt true
                                           :send    remote/send})]
                       (om/add-root! rv ui/Root (gdom/getElement "app"))
