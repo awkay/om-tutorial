@@ -1,7 +1,5 @@
 # Om Tutorial Code
 
-# IMPORTANT: Om alpha 24 makes parsing/read easier. See notes in section on Reads and Parsing
-
 This is a project holding an Om (next) project that is to be used
 as the basis of a complete overview of the features of Om. For 
 simplicity, the server-side component is simulated in the browser. 
@@ -12,9 +10,11 @@ will need some minor plumbing to do the actual network bits).
 
 The organization is in flux. The top-level `src` directory contains:
 
-- `main`: A demo application with simulated remote server (in progress, but working)
 - `tutorial`: Devcards with a live tutorial (in progress)
+- `main`: A demo application with simulated remote server (in progress, but working)
 - `cards` : Some development/tests written in devcards
+
+The latter two are for my internal purposes at the moment, so you can largely ignore them.
 
 ## Running it
 
@@ -25,17 +25,13 @@ or at the command line with:
 lein run -m clojure.main script/figwheel.clj
 ```
 
-Then browse to all of the following URLs in separate tabs:
+Then browse to the following URL in separate tabs:
 
 ```
-http://localhost:3450/                - Main app ; BROKEN, waiting on bug fixes Om-495 and Om-503
-http://localhost:3450/tutorial.html   - Devcards-based Tutorial (start here)
-http://localhost:3450/cards.html      - Devcards (tests) UI
+http://localhost:3450   Devcards-based Tutorial (start here)
 ```
 
-For now, feel free to browse the source of the demo app, or follow the pages in the tutorial.
-
-Expect things to change often...this is a work in progress that may take several weeks. If you'd like
+Expect things to change often...this is a work in progress that may take several weeks or even months. If you'd like
 to contribute, I'd love the help. Ping me on Slack (@tony.kay) so we don't stomp on each other.
 
 Some things I'd like to have (but don't have the time to get to):
@@ -44,19 +40,15 @@ Some things I'd like to have (but don't have the time to get to):
 to React docs, what the `#js` stuff is about and why you only do it on dom elements. Basic gotchas for 
 beginners. Bonus points if anyone wants to hack the cljs ecosystem so that code pretty-printing can _handle_
 `#js`.
-- A stateless Om component that can render a tree on demand (given the tree data in props).
-  e.g.,  http://www.cssscript.com/creating-simple-diagrams-with-nodes-and-links-using-svg-and-d3-js/
 - CSS for anything you think is too ugly
 
 ## Figwheel notes
 
-I'm starting three builds at the same time in `start-dev`. Once the fighweel REPL is going, you can switch 
-to your build of interest (useful if you want to edit things and have quicker re-renders):
-
-The build IDs are "dev", "cards", and "tutorial". You can switch to a single one of these with a command like:
+I'm starting three builds at the same time in `start-dev`. Once the fighweel REPL is going, you can 
+clean and rebuild with 
 
 ```
-(switch-to-build "cards")
+(reset-autobuild)
 ```
 
-Now only the devcards part will hot reload.
+after which you probably want to reload the page in your browser to clear out any cruft.

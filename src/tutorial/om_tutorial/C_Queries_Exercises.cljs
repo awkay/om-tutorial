@@ -4,68 +4,70 @@
     )
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
+            [om-tutorial.queries.exercise-util :as u]
             [devcards.core :as dc :refer-macros [defcard defcard-doc]]
             ))
 
-(declare person)
+(declare om-person)
 
 (defui Person
        ;; TODO: Add a query for :db/id, :person/name, and a recursive access of :person/mate
        ;; TODO: Add an ident that uses :db/id
        Object
-       (initLocalState [this] { :checked false })
+       (initLocalState [this] {:checked false})
        (render [this]
                (let [{:keys [person/name person/mate]} (om/props this)
+                     {:keys [onDelete]} (om/get-computed this)
                      checked (om/get-state this :checked)]
                  (dom/li nil
-                         (dom/input #js {:type "checkbox"
+                         (dom/input #js {:type    "checkbox"
                                          :onClick #(om/update-state! this update :checked not)
                                          :checked (om/get-state this :checked)
                                          })
                          (if checked
                            (dom/b nil name)
                            (dom/span nil name))
-                         (dom/button nil "X")
+                         (when onDelete
+                           (dom/button #js {:onClick #(onDelete name)} "X"))
                          (when mate (dom/ul nil (om-person mate)))
                          )))
        )
 
-(def person (om/factory Person {:keyfn :db/id}))
+(def om-person (om/factory Person {:keyfn :db/id}))
 
 (defui PeopleWidget
        static om/IQuery
        (query [this] `[{:people ~(om/get-query Person)}])
        Object
        (render [this]
-               (let [people (-> (om/props this) :people)]
+               (let [people (-> (om/props this) :people)
+                     deletePerson (fn [p] (println "Delete" p))
+                     ]
                  (dom/div nil
                           (if (= nil people)
                             (dom/span nil "Loading...")
                             (dom/div nil
                                      (dom/button #js {} "Save")
                                      (dom/button #js {} "Refresh List")
-                                     (dom/ul nil (map #(person (om/computed % {:onDelete deletePerson})) people))))
+                                     (dom/ul nil (map #(om-person (om/computed % {:onDelete deletePerson})) people))))
                           )
                  )
                )
        )
 
-(def people-list (om/factory PeopleWidget))
+(def people-widget (om/factory PeopleWidget))
 
 (defui Root
-       static om/IQuery
-       (query [this] `[:new-person :last-error {:widget ~(om/get-query PeopleWidget)}])
+       ;; TODO: Add root query. Remember to include top-level properties and compose in PeopleWidget
        Object
        (render [this]
-               (let [setInputValue (fn [e] (om/transact! this `[(app/set-new-person {:value ~(.. e -target -value)})]))
-                     addPerson (fn [name] (om/transact! this `[(app/add-person {:name ~name}) :people]))
-                     {:keys [widget new-person last-error]} (om/props this)]
+               (let [{:keys [widget new-person last-error]} (om/props this)]
                  (dom/div nil
                           (dom/div nil (when (not= "" last-error) (str "Error " last-error)))
                           (dom/div nil
-                                   (people-list widget)
-                                   (dom/input #js {:type "text" :value new-person :onChange setInputValue})
-                                   (dom/button #js {:onClick #(addPerson new-person)} "Add Person")))
+                                   (people-widget widget)
+                                   (dom/input #js {:type "text"})
+                                   (dom/button #js {} "Add Person")))
                  )))
 
 (def om-root (om/factory Root))
@@ -103,7 +105,7 @@
          "
          (fn [state-atom _]
            (om-root @state-atom))
-         {:last-error "Some error message"
+         {:last-error ""
           :new-person ""
           :widget     {:people [
                                 {:db/id 1 :person/name "Joe" :person/mate {:db/id 2 :person/name "Sally"}}

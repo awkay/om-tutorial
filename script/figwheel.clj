@@ -6,8 +6,7 @@
 (def figwheel-config
   {:figwheel-options {:server-port 3450}
    ;; builds to focus on
-   ;:build-ids        ["tutorial" "cards" "dev"]
-   :build-ids        [ "dev"]
+   :build-ids        [ "tutorial"]
    ;; load build configs from project file
    :all-builds       (figwheel-sidecar.config/get-project-builds)
    })

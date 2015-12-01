@@ -64,6 +64,17 @@
   changes to something and the saved state no longer makes sense then you will need to reload the page via the browser
   to clear that state.
 
+  # IMPORTANT IF YOU GET STUCK:
+
+  First, if there is no obvious error in the browser try reloading the page.
+
+  If you make a typo or language error Figwheel will usually describe it pretty well in the browser.
+  However, it is possible to get the whole thing stuck. Typing `(reset-autobuild)` in the REPL will clean the sources and
+  rebuild (and you'll see compile errors there). Correct the errors and everything should start
+  working again. DO NOT kill the REPL and restart, as that will cause you a lot of waiting as
+  you get compile errors, edit, and restart. (If you do kill the REPL,
+  you might even consider using git to undo your changes so that it will restart cleanly).
+
   ## Notes on documentation:
 
   Om wrappers on plain DOM elements take as their second parameter a javascript map (not a cljs one) or nil. As such, you
