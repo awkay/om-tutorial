@@ -5,7 +5,7 @@
                  [devcards "0.2.1" :exclusions [org.omcljs/om]]
                  [datascript "0.13.3"]
                  [org.omcljs/om "1.0.0-alpha24"]
-                 [figwheel-sidecar "0.5.0-SNAPSHOT" :scope "test"]]
+                 [figwheel-sidecar "0.5.0-2" :scope "test"]]
 
   :source-paths ["src/main" "src/cards" "src/tutorial"]
 
@@ -19,7 +19,7 @@
               [
                {:id           "dev"
                 :figwheel     true
-                :source-paths ["src/main" ]
+                :source-paths ["src/main"]
                 :compiler     {:main                 om-tutorial.core
                                :asset-path           "js"
                                :output-to            "resources/public/js/main.js"
@@ -29,7 +29,7 @@
                                :verbose              false}}
                {:id           "cards"
                 :figwheel     {:devcards true}
-                :source-paths ["src/main" "src/cards" ]
+                :source-paths ["src/main" "src/cards"]
                 :compiler     {
                                :main                 om-tutorial.cards
                                :source-map-timestamp true
@@ -41,7 +41,7 @@
                                :verbose              false}}
                {:id           "tutorial"
                 :figwheel     {:devcards true}
-                :source-paths ["src/main" "src/tutorial" ]
+                :source-paths ["src/main" "src/tutorial"]
                 :compiler     {
                                :main                 om-tutorial.tutorial
                                :source-map-timestamp true

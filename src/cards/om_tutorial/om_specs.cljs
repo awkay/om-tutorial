@@ -6,7 +6,6 @@
   (:require [om.next :as om :refer-macros [defui]]
             [goog.dom :as gdom]
             [om.dom :as dom]
-            [om-tutorial.parsing :as p]
             [om-tutorial.core :as core]
             [om-tutorial.ui :as ui]
             [devcards.core :as dc]
