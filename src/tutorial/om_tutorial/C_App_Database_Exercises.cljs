@@ -11,12 +11,9 @@
   "
   # App Database Exercises
 
-  TODO:
+Not sure we need any...the query section has plenty. But maybe:
 
-  - An exercise that shows tree->db cannot normalize without querys on components (idents are needed for that to
-  work)
-  - An exercise or two using db->tree to fetch data from arbitrary databases (e.g. show normalized database
-  and have the user write queries that retrieve various things)
+- Manually create a normalized database for the following data... kind of thing
 
 ")
 

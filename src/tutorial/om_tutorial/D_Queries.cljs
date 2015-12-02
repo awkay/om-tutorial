@@ -133,6 +133,10 @@
 
 
   (defcard-doc "
+
+  TODO: Continue rewrite from here....
+
+
   ## Co-located Queries on Components
 
   After playing with the database and queries, you now see that query results from simple properties and joins
