@@ -5,7 +5,8 @@
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
             [devcards.core :as dc :refer-macros [defcard defcard-doc deftest]]
-            ))
+            [cljs.reader :as r]
+            [om.next.impl.parser :as p]))
 
 (let [sam {:db/id 1 :person/name "Sam" :person/mate [:people/by-id 2]}
       jenny {:db/id 2 :person/name "Jenny" :person/mate [:people/by-id 1]}
@@ -14,7 +15,24 @@
                  }]
   (defcard-doc
     "
-    # Using `db->tree`
+    # State Reads and Parsing
+
+    As we said in the Queries section: the queries are composed to the root of the UI, and
+    (except for optimization cases) looks as if it passed throught the root to whatever child
+    needs it. Om actually does a little better than that, but you should think of it that way for
+    now.
+
+    So, how do you get Om to take the data out of the app state database (which you invented)
+    and give it in the UI?
+
+    The answer is that Om supplies you with a query grammar parser that understands the syntax
+    of queries. As it hits each node of a query it is programmed (by you) to call read functions
+    that retrieve the data.
+
+    Fortunately, if you're using the default database format then you can get a lot of the work
+    done for you by leveraging `db->tree`.
+
+    ## Using `db->tree`
 
     You can do a lot of work to build parsing and reads, but Om comes with a very nice function for turning a UI query
     into the desired data from a normalized (default-format) database. With liberal use of idents as links in the graph
@@ -73,10 +91,6 @@
 
   TODO. Placeholder stuff from readme below...
 
-  ## Parsing
-
-  ## Joins
-
   ### Local vs. Remote
 
   The Om parser accepts just one read and one mutate. Unfortunately, this means that the same code gets invoked
@@ -99,6 +113,9 @@
   ```
 
   ### Local Parsing
+
+  DEPRECATED. Use `db->tree`.  The following code may aid in you understanding how `db->tree` works. The UI-related
+  separation is more easily done by overriding the merge behaviors in Om.
 
   The parsing helper code in this example has been written with some care, with the intent to reduce the overall footprint
   of the application-specific local read code to a minimal level. The resulting helper functions are not tested
@@ -125,22 +142,6 @@
   The parsing is fine if you want to use the special keyword `:missing` in place of data that will be demand loaded
   later. The join processing code will naturally stop at such places when looking for local data.
 
-  ### Separating UI-concern data from Persistent data
-
-  If you have a widget that has only client-local data, then just put it on that widget.
-
-  However, one trouble you'll likely run into pretty quickly is the fact that queries often complect local UI-concern data
-  with stuff that is stored on a server. If you try to stuff these transient values into the same locations and
-  do a remote fetch you'll either overwrite them, or you'll end up writing merge logic and plugging that in. Basically,
-  you'll make a mess.
-
-  Rather that fooling with that I've come up with a scheme where you can put any UI-specific data on a separate
-  app-state table as long as the component in question has an `Ident`. Since most things that are persistent can
-  (and probably will) have that, it seems like a non-intrusive requirement.
-
-  The parsing read helpers for local state then make it *look like* these UI attributes are on the persistent object,
-  when in fact they're pulled from a separate UI attribute table and merged in during the read.
-
   ### Basic read-local Rules
 
   Write the `read-local` using a `case`. These are very fast. You may dispatch to a different read function as
@@ -162,16 +163,24 @@
   ask for `[:a]` in some sub-fragment, and the object in the state there has `{:a 1 :b 2}`, then this parser code
   will return `{:a 1}`.
 
-  ## Path Optimization
-
-  If your UI gets rather large, you may see warnings in the Javascript Console of the browser about slowness. If you do,
-  you can leverage path optimization to minimize the amount of work the parser has to do in order to update a sub-portion
-  of the UI.
-
-  If you pass `:pathopt true` to the reconciler, then Om will attempt to root a query at the component that needs
-  re-rendering if and only if it has an `Ident`.
-
-  When it attempts this, it will call your `read` function with `:query/root` set to the ident of the component that
-  is needing re-render, and
 
   ")
+
+(defcard sample-ast
+         (fn [state _]
+           (let [{:keys [v]} @state]
+             (dom/div nil
+                      (dom/input #js {:type     "text"
+                                      :value    v
+                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+                      (dom/button #js {:onClick #(try
+                                                  (swap! state assoc :error "" :ast (p/expr->ast (r/read-string v)))
+                                                  (catch js/Error e (swap! state assoc :error e))
+                                                  )} "Evaluate AST")
+
+                      ))
+           )
+         {:ast []}
+         {:inspect-data true}
+         )
+

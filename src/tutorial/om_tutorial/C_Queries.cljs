@@ -15,7 +15,7 @@
   # Queries
 
   First, please understand that *Om does not know how to read your data* on the client *or* the server.
-  Om provides a query syntax and a query parser, but you end up providing the \"data retrievale\" part
+  Om provides a query syntax and a query parser, but you end up providing the \"data retrieval\" part
   of the works.
 
   That said, let's understand the query syntax and semantics.
@@ -54,8 +54,8 @@
 
   The above query indicates you'd like to know a person's name, id, and details about their occupation. This
   implies that `:person/occupation` is a to-one or to-many relationship. The result of a query is a map,
-  filled in (recursively) with the data requested. For example, the two possible structures for the above
-  query are:
+  filled in (recursively) with the data requested. For example, the two possible structures for the result
+  of the above query are:
 
   ```
   { :person/id 1
@@ -106,7 +106,7 @@
   code can determine what to feed that component.
 
   IMPORTANT NOTE: understand that queries *must* compose all the way to the root or your UI or Om can't find them!
-  My relative comment above is about the fact that the *context of understanding* the query bits is relative.
+  My \"relativity\" comment above is about the fact that the *context* of understanding the query bits is relative.
 
   Examples might be:
 
@@ -162,24 +162,6 @@
          {:inspect-data true}
          )
 
-(defcard sample-ast
-         (fn [state _]
-           (let [{:keys [v]} @state]
-             (dom/div nil
-                      (dom/input #js {:type     "text"
-                                      :value    v
-                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
-                      (dom/button #js {:onClick #(try
-                                                  (swap! state assoc :error "" :ast (p/expr->ast (r/read-string v)))
-                                                  (catch js/Error e (swap! state assoc :error e))
-                                                  )} "Evaluate AST")
-
-                      ))
-           )
-         {:ast []}
-         {:inspect-data true}
-         )
-
 (defcard-doc "
   In the above example, you could have just as well defined the intermediate node as a plain function, and saved
   yourself some typing (and the need to unpack props in the middle).
@@ -226,7 +208,12 @@
   ### Failing to Reach the UI Root
 
   Om only looks for the query on the root component of your UI! Make sure your queries compose all the way to
-  the root!
+  the root! Basically the Root component ends up with one big fat query for the whole UI, but you get to
+  *reason* about it through composition (recursive use of `get-query`). Also note that all of the data
+  gets passed into the Root component, and every level of the UI that asked for (or composed in) data
+  must pick that apart and pass it down. In other words, you can pretend like you UI doesn't even have
+  queries when working on your render functions. E.g. you can build your UI, pick apart a pretend
+  result, then later add queries and everything should work.
 
   ### Declaring a query that is not your own
 
@@ -240,14 +227,14 @@
   ```
 
   because they think \"this component just needs what the child needs\". If that is truly the case, then
-  Widget should not have a query at all (the parent should compose it into it's own query). The most common
+  Widget should not have a query at all (the parent should compose OtherWidget's into it's own query). The most common
   location where this happens is at the root, where you my not want any specific data yourself.
 
   In that case, you *do* need a stateful component, but you'll need to get the child data using a join, then
   pick it apart via code and manually pass those props down:
 
   ```
-  (defui Widget
+  (defui RootWidget
        static om/IQuery
        (query [this] [{:other (om/get-query OtherWidget)}])
        Object

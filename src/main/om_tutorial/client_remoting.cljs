@@ -26,7 +26,7 @@
     (js/setTimeout (fn []
                      (println "state to merge " (rewrite server-response))
                      (cb (rewrite server-response))
-                     ) 100)
+                     ) 1000)
     )
   )
 

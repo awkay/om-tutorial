@@ -61,7 +61,8 @@
 
   ## The Default Format
 
-  The default database format is an edn map. It can have as many top-level keys as make sense to you, but in general
+  The default database format is an edn map.
+  It can have as many top-level keys as make sense to you, but in general
   there will be top-level keys for each property in the top-level query of your UI. For Om to work right, anything
   that might be shared in the UI (or is dealt with in persistence layers) should have an ident
   (see [the glossary](#!/om_tutorial.Z_Glossary)). We'll get to that in a minute.
@@ -69,7 +70,7 @@
   Remember from the section on Queries that when you co-locate queries on components, you may or may not
   have interstitial stateless components.
   The default database format is structured like the *query tree*. Anything that has a co-located query
-  should appear in the application state tree.
+  should appear in the application state.
   This means your UI tree and query tree almost certainly will not match.
 
   For example, if you had the following UI elements:
@@ -117,11 +118,16 @@
   In order for this to work well, you ideally want to have that shared data in your app state just once.
 
   So, the default Om database format encourages you to identify this kind of data and put the actual
-  data in top-level tables. Then, in the UI state tree, place references (idents) to that top-level data. This
-  way, you can update it in one place, and Om can re-render everything that depends on it.
+  data in top-level tables. Then in the database you replace that data with references (idents)
+  to that top-level data. This way, you can update it in one place, and Om can re-render
+  everything that depends on it.
 
-  An ident is just a unique identity, represented as a 2-tuple `vector` with a first element keyword. An ident need only
-  be client-unique, but will often be based on real server-persisted data. Examples might be `[:people/by-id 3]`
+  Note that what you really have now is a graph since you can navigate from one part of the
+  database to a completely different part. Also note that this graph can easily have loops (Me and Joe are friends,
+  so our friends references point at each other).
+
+  An ident is just a unique identity, represented as a 2-tuple `vector` with a first element keyword.
+  An ident need only be client-unique, but will often be based on real server-persisted data. Examples might be `[:people/by-id 3]`
   and `[:ui.button/by-id 42]`.
 
   Ident is declared a lot like queries, but in this case you
@@ -137,12 +143,11 @@
 
   ## Sample Default Database
 
-
   The Om function `tree->db` can convert non-normalized state
   trees into this format given a query that includes components that have `Ident`.
 
-  If we take a proposed *result tree* and apply `(om/tree->db A result-tree true)`,
-  then we'll get a database in the default format. Formally, this is a tree of data
+  If we take a proposed *UI query result tree* and apply `(om/tree->db A result-tree true)`,
+  then we'll get a database in the default format. Formally, this is a graph of data
   where all of the objects that *have* an ident are replaced *by* that ident, and
   the actual data of those objects is moved to top-level Om-owned tables.
   ")

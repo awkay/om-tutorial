@@ -22,12 +22,23 @@
   ### Remote Fetch
 
   For each remote that you list in the reconciler (default is just `:remote`), the parser will run with `:target` set
-  in the env to that remote. This lets you gather up different sets of queries to send to each remote.
+  in the env to that remote.
 
-  The reader factory I've created lets you supply a map from remote name to reader function, so that you can
-  separate your logic out for each of these query parses.
+  In this mode the parser is passing your read functions bits of query, and you are returning bits of query
+  (possibly modified). The point is that the remote parse returns the query you want to run on that remote
+  (or nothing if you don't have anything to say).
 
-  In remote parsing mode, the parser expects you to return either `true` or a (possibly modified) AST node (which
+  So, in \"local read mode (target = nil)\" your read functions return *data* as part of a *result*.
+
+  In remote read mode (target !+ nil) your read functions return query fragments to retain for a query to the server.
+
+  Since the parser is run once for each remote you can gather up *different* queries to send to *each* remote.
+
+  The reader factory for parsing I've created lets you supply a map from remote name to reader function,
+  so that you can separate your logic out for each of these query parses.
+
+  In remote parsing mode, the parser expects your read functions to return either `{:remote-name true }` or
+  a (possibly modified) `{:remote-name AST-node}` (which
   comes in as `:ast` in `env`). Doing recursive parsing on this is a bit of a pain, but is also typically necessary
   so that you can both maintain the structure of the query (which *must* be rooted from your Root component)
   and prune out the bits you don't want.
@@ -54,7 +65,7 @@
 
   TODO: Elide keywords from the resulting fetch query if they are in the ui.* namespace, so we don't ask the server for them
 
-  ## Re-rooting Server Queries
+  ## Re-rooting Server Queries (Pending reimplementation in this project in the om-503 namespace)
 
   In our tutorial application we have a top-level component that queries for `:widget`. The queries must compose to
   the root of the UI, but we'd really like to not have to send this client-local bit of the query over to the server,
@@ -107,7 +118,8 @@
 
   The present example has a server simulation (using a 1 second setTimeout). Hitting \"refresh\" will clear the `:people`,
   which will cause the remote logic to trigger. One second later you should see the simulated data I've placed on this
-  \"in-browser server\".
+  \"in-browser server\". See `client-remoting` and `simulated-server` in the main project.
 
-  There is a lot more to do here, but tempids are not quite done yet, so I'll add more in as that becomes available.
+  The current code only works if you to use lein checkouts and Om alpha 25-snapshot. Once alpha 25+ is out, this
+  should be easier.
   ")

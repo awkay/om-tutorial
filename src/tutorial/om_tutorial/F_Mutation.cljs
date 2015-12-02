@@ -11,8 +11,10 @@
   "
   # Mutation
 
-  The mutation story is based on multi-methods, dispatched by symbol. Any actions that you want to run locally just go
-  in the action thunk of the return of your mutation.
+  Mutations are part of the query syntax, except they dispath to your top-level mutation function. One way
+  to deal with this nicely is to use a multi-method, dispatched by symbol.
+
+  Any actions that you want to run locally just go in the action thunk of the return of your mutation.
 
   The UI-tree portion of your app state will end up with a bunch of refs in it, and the top-level of the state
   will have Om-generated tables holding the objects themselves.
@@ -39,6 +41,5 @@
   ```
      (om/transact! this '[(app/do-thing) :widget [:db/id 4]])
   ```
-
   ")
 

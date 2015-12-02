@@ -36,8 +36,6 @@
 (def om-person (om/factory Person {:keyfn :db/id}))
 
 (defui PeopleWidget
-       static om/IQuery
-       (query [this] `[{:people ~(om/get-query Person)}])
        Object
        (render [this]
                (let [people (-> (om/props this) :people)
@@ -81,6 +79,12 @@
 
   ")
 
+(def db {:last-error ""
+         :new-person ""
+         :db/id      {1 {:db/id 1 :person/name "Joe" :person/mate [:db/id 2]}
+                      2 {:db/id 2 :person/name "Sally" :person/mate [:db/id 1]}}
+         :widget     {:people [[:db/id 1] [:db/id 2]]}})
+
 (defcard exercise-1
          "## Exercise 1
 
@@ -104,13 +108,9 @@
          the full query.
          "
          (fn [state-atom _]
-           (om-root @state-atom))
-         {:last-error ""
-          :new-person ""
-          :widget     {:people [
-                                {:db/id 1 :person/name "Joe" :person/mate {:db/id 2 :person/name "Sally"}}
-                                {:db/id 2 :person/name "Sally" :person/mate {:db/id 1 :person/name "Joe"}}
-                                ]}
-          }
+           (om-root (om/db->tree (om/get-query Root) db db)))
+         {:new-person "", :last-error "",
+          :widget     {:people [{:person/name "Joe" :db/id 1 :person/mate {:person/name "Sally" :db/id 2}}
+                                {:person/name "Sally" :db/id 2 :person/mate {:person/name "Joe" :db/id 1}}]}}
          {:inspect-data true}
          )
