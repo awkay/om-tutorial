@@ -11,7 +11,7 @@ will need some minor plumbing to do the actual network bits).
 The organization is in flux. The top-level `src` directory contains:
 
 - `tutorial`: Devcards with a live tutorial (in progress)
-- `main`: A demo application with simulated remote server (in progress, but working)
+- `main`: A demo application with simulated remote server (in progress, but working with Om master or alpha25+)
 - `cards` : Some development/tests written in devcards
 
 The latter two are for my internal purposes at the moment, so you can largely ignore them.
