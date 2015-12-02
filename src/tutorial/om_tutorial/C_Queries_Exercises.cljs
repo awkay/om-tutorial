@@ -88,6 +88,8 @@
 (defcard exercise-1
          "## Exercise 1
 
+TODO: Split this into smaller bits.
+
          OK, you've still got a plain React component. `defui` just makes a React class.
 
          This exercise is about connecting the dots. The rules for co-located queries are

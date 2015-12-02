@@ -166,21 +166,4 @@
 
   ")
 
-(defcard sample-ast
-         (fn [state _]
-           (let [{:keys [v]} @state]
-             (dom/div nil
-                      (dom/input #js {:type     "text"
-                                      :value    v
-                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
-                      (dom/button #js {:onClick #(try
-                                                  (swap! state assoc :error "" :ast (p/expr->ast (r/read-string v)))
-                                                  (catch js/Error e (swap! state assoc :error e))
-                                                  )} "Evaluate AST")
-
-                      ))
-           )
-         {:ast []}
-         {:inspect-data true}
-         )
 

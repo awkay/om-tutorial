@@ -123,3 +123,34 @@
   The current code only works if you to use lein checkouts and Om alpha 25-snapshot. Once alpha 25+ is out, this
   should be easier.
   ")
+
+(defcard-doc "
+  ## Handling Results
+
+  The server will respond to queries as if you'd run them through your local parser...e.g. the remoting
+  has the exact form as a local parse: You send a query, it returns a response. The fact that there
+  is some network plumbing in the middle just means you have a little more error handling to do.
+
+  However, that isn't the whole story: calling the provided callback to put the returned data into the
+  database is often not quite enough.
+
+  The default mechanims of Om understand the basics of the app database, but there are a number
+  of application-specific details that you must understand, and possibly handle yourself.
+
+  When you create your application's reconciler, you may supply overrides to the following:
+
+  - `:merge-tree` A function used to take a response from the server and merge it into your app database.
+  Defaults to a very naive shallow merge.
+  - `:migrate` A function to rewrite tempids that have been reassigned by the server. As of alpha24 this function
+  will remove any database data that is not currently in the UI query (e.g. isn't on the screen). This may
+  cause undesired chattiness over the network, and possibly other bad behavior if you're doing anything
+  a bit non-standard with the app database.
+  - `:id-key` If you do use the built-in tempid migration, this config option specifies which key in you app state
+  maps is used to hold the DB ID (where tempids will appear).
+
+  If you look in `om-tutorial.core` you'll see an alternate tempid migration function that doesn't need id-key
+  and doesn't throw out potential cached app state.
+
+  ")
+
+
