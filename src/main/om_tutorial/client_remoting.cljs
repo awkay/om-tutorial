@@ -19,7 +19,9 @@
 
 (defn send [remote-queries cb]
   (let [payload (:my-server remote-queries)
+        _ (println "Payload: " payload)
         {:keys [query rewrite]} (process-roots payload)
+        _ (println "server query: " query)
         server-response (simulated-server query)]
     (js/setTimeout (fn []
                      (println "state to merge " (rewrite server-response))

@@ -18,8 +18,7 @@
                  (dom/li nil
                          (dom/input #js {:type    "checkbox"
                                          ;; Toggle a boolean UI attribute. Must supply the attribute and ref of this
-                                         :onClick #(om/transact! this `[(app/toggle-ui-boolean {:attr :ui/checked
-                                                                                                :ref  [:db/id ~id]})])
+                                         :onClick #(om/transact! this `[(app/toggle-person-checkbox {:db/id ~id})])
                                          :checked (boolean checked)})
                          name
                          (when onDelete (dom/button #js {:onClick #(onDelete id)} "X"))
@@ -53,12 +52,13 @@
 
 (defui Root
        static om/IQuery
-       (query [this] `[:new-person :last-error {:widget ~(om/get-query PeopleWidget)}])
+       (query [this] [:new-person :last-error {:widget (om/get-query PeopleWidget)}])
        Object
        (render [this]
-               (let [setInputValue (fn [e] (om/transact! this `[(app/set-new-person {:value ~(.. e -target -value)})]))
+               (let [setInputValue (fn [e] (om/transact! this `[(app/set-new-person {:value ~(.. e -target -value)}) :new-person]))
                      addPerson (fn [name] (om/transact! this `[(app/add-person {:name ~name}) :people]))
-                     {:keys [widget new-person last-error]} (om/props this)]
+                     {:keys [new-person last-error widget]} (om/props this)]
+                 (println "PROPS: " (om/props this))
                  (dom/div nil
                           (dom/div nil (when (not= "" last-error) (str "Error " last-error)))
                           (dom/div nil

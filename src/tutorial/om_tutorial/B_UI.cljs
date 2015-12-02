@@ -207,7 +207,8 @@
              (root-computed (om/computed prop-data sideband-data)))
            )
          {:number 42 :people [{:name "Sally"}] :b false}
-         {:inspect-data true})
+         {:inspect-data true
+          :history true})
 
 (defcard-doc
   "

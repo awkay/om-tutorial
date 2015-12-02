@@ -8,6 +8,7 @@
 ;"Update the client-local holder for an input in progress"
 (defmethod mutate 'app/set-new-person
   [{:keys [state] :as env} k {:keys [value]}]
+  (println "VALUE: " value)
   {:action (fn [] (swap! state assoc :new-person value))}
   )
 
@@ -52,19 +53,17 @@
 
 (defmethod mutate 'app/delete-person
   [{:keys [state ast] :as env} k {:keys [db/id]}]
-  (println "delete " ast)
+  (println "delete " id)
   {:my-server ast
    :action    (fn []
                ; (swap! state update-in [:widget :people] (partial remove-person id))
                 )
    })
 
-#_"Handles a generalized bit of UI state that represents a UI boolean.
-Parameter should be the `ref` of the UI component that owns the boolean."
-(defmethod mutate 'app/toggle-ui-boolean
-  [{:keys [state]} k {:keys [ref attr]}]
+(defmethod mutate 'app/toggle-person-checkbox
+  [{:keys [state]} k {:keys [db/id]}]
   {:action (fn []
-             (let [path (conj (p/ui-key ref) attr)]
+             (let [path [:db/id id :ui/checked]]
                (swap! state update-in path not))
              )}
   )
