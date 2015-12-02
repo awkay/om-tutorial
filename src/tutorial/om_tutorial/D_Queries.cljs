@@ -67,48 +67,77 @@
 
   Except for unions, queries are represented as vectors. Each item in the vector is a request for a data item, or
   is a call to an abstract operation. Data items can indicate joins by nesting the given property name
-  in a map. The most common query looks like this:
+  in a map.
 
-  ```
-  [:person/id :person/name {:person/occupation [:occupation/name]}]
-  ```
+  Let's start with a very simple database and query as shown in the card below:"
+  )
 
-  The above query indicates you'd like to know a person's name, id, and details about their occupation. This
-  implies that `:person/occupation` is a to-one or to-many relationship. The result of a query is a map,
-  filled in (recursively) with the data requested. For example, the two possible structures for the result
-  of the above query are:
+(defn run-query [db q]
+  (try
+    (om/db->tree (r/read-string q) db db)
+    (catch js/Error e "Invalid Query")))
 
-  ```
-  { :person/id 1
-    :person/name \"Ben\"
-    :person/occupation { :occupation/name \"UI Designer\" } }
-  ```
+(defcard query-example-1
+         "This query asks for a person's name from the database. You can see our database (:db in the map below)
+         has a bunch of top level properties...the entire database is just a single person.
+         Play with the query. Ask for this person's age and database ID.
 
-  for a person with one job, or possibly
+         Notes:
 
-  ```
-  { :person/id 1
-    :person/name \"Ben\"
-    :person/occupation [{ :occupation/name \"UI Designer\" } { :occupation/name \"Pilot\" }] }
-  ```
+         - The query has to be a single vector
+         - The result is a map, with keys that match the selectors in the query.
+         "
+         (fn [state-atom _]
+           (dom/div nil
+                    (dom/input #js {:type "text" :value (:query @state-atom)
+                                    :size 80
+                                    :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
+                    (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
+                    ))
+         {:query "[:person/name]"
+          :query-result {}
+          :db {:db/id 1 :person/name "Sam" :person/age 23}}
+         {:inspect-data true}
+         )
 
-  for someone with two. Note that the join ended up placing the join key on the top-level object, which is
-  naturally where it would belong in data. The map in the query is about specifying what \"colums\" you want
-  out of the resulting joined object(s). If you had asked:
+(defcard-doc
+  "
+  A more interesting database has some tables in it, like we saw in the App Database section. Let's play with
+  queries on one of those.")
 
-  ```
-  [:person/id :person/name {:person/occupation [:occupation/name :occupation/avg-pay]}]
-  ```
+(defcard query-example-2
+         "This database (in :db below) has some performance statistics linked into a table and chart. Note that
+         the query for the table is for the disk data, while the chart is using both. Play with the query a bit
+         to make sure you understand it (e.g. erase it and try to write it from scratch).
 
-  you might have gotten:
+         Note that the query result is a map in tree form. A tree is exactly what you need for a UI!
+         "
+         (fn [state-atom _]
+           (dom/div nil
+                    (dom/input #js {:type "text" :value (:query @state-atom)
+                                    :size 120
+                                    :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
+                    (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
+                    ))
+         {:query        "[{:table [:name {:data [:disk-activity]}]}   {:chart [:name {:data [:disk-activity :cpu-usage]}]}]"
+          :query-result {}
+          :db           {:table      {:name "Disk Performance Table" :data [:statistics :performance]}
+                         :chart      {:name "Combined Graph" :data [:statistics :performance]}
+                         :statistics {:performance {
+                                                    :cpu-usage     [45 15 32 11 66 44]
+                                                    :disk-activity [11 34 66 12 99 100]
+                                                    :network-activity [55 87 20 01 22 82]
+                                                    }}}}
+         {:inspect-data true}
+         )
 
-  ```
-  { :person/id 1
-    :person/name \"Ben\"
-    :person/occupation { :occupation/name \"UI Designer\" :occupation/avg-pay 60000.0 } }
-  ```
 
+  (defcard-doc "
   ## Co-located Queries on Components
+
+  After playing with the database and queries, you now see that query results from simple properties and joins
+  through the graph can be used to generate an arbitrary tree of data for your UI. Now the next step is to
+  localize the bits of query onto the components that need the related data.
 
   ### Relativity
 
