@@ -1,4 +1,4 @@
-(ns om-tutorial.C-Queries-Exercises
+(ns om-tutorial.D-Queries-Exercises
   (:require-macros
     [cljs.test :refer [is]]
     )

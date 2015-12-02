@@ -10,7 +10,7 @@
 
 (defcard-doc
   "
-  # Advanced Queries
+  # Dynamic Queries
 
   Plan:
 
@@ -19,6 +19,5 @@
   - IQueryParams
   - Dynamically modifying queries and query parameters
   - Embedding query fragments via query parameters
-  - Unions
 
   ")

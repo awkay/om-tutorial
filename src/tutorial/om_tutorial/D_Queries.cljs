@@ -1,4 +1,4 @@
-(ns om-tutorial.C-Queries
+(ns om-tutorial.D-Queries
   (:require-macros
     [cljs.test :refer [is]]
     )
@@ -12,15 +12,19 @@
 
 (defcard-doc
   "
-  # Queries
+  # Om Queries
+
+  ## Important Notes
 
   First, please understand that *Om does not know how to read your data* on the client *or* the server.
-  Om provides a query syntax and a query parser, but you end up providing the \"data retrieval\" part
-  of the works.
+  It does provide some useful utilities for the default database format described in the App
+  Database section, but since you can structure things in that format in some arbitrary way
+  you do have to participate in query result construction. Make sure you've read the App
+  Database section carefully, as we'll be leveraging that understanding here.
 
   That said, let's understand the query syntax and semantics.
 
-  ## Syntax
+  ## Query Syntax
 
   Queries are written with a variant of Datomic pull syntax.
 
@@ -29,6 +33,7 @@
   [:some/key]                              ;;prop
   [(:some/key {:arg :foo})]                ;;prop + params
   [{:some/key [:sub/key]}]                 ;;join + sub-select
+  [:some/k1 :some/k2 {:some/k3 ...}]       ;;recursive join
   [({:some/key [:sub/key]} {:arg :foo})]   ;;join + params
   [[:foo/by-id 0]]                         ;;reference
   [(fire-missiles!)]                       ;;mutation
@@ -41,6 +46,22 @@
   *RECOMMENDATAION*: Even if you do not plan to use Datomic, I highly recommend
   going through the [Datomic Pull Tutorial](http://docs.datomic.com/pull.html).
   It will really help you with Om Next queries.
+
+  ## A quick note on Quoting
+
+  Quoting is not an Om thing, it is a clj(s) thing. The syntax of Om queries is just data, but it
+  uses things (like symbols and lists) that the compiler would like to give different meaning to than
+  we need.
+
+  If you have not done much in the way of macro programming you may be confused by the
+  quoting often seen in these queries. I'd recommend doing a tutorial on macros, but
+  here are some quick notes:
+
+  - Using `'` quotes the form that follows it, making it literal.
+  - Using a backquote in front of a form is a syntax quote. It will namespace all symbols, and allows
+    you to unquote subforms using `~`. You'll sometimes also see ~' in front of a non-namespaced
+    symbol *within* a syntax quoted form. This prevents a namespace from being added (unquote a form
+    that literally quotes the symbol).
 
   ## Understanding Queries
 
@@ -102,10 +123,11 @@
   (dc/mkdn-pprint-source qd/Person)
   "
 
-  As such, such a \"leaf\" must be composed towards a (relative) root that will give enough context so that the database reading
-  code can determine what to feed that component.
+  For this query to make sense it must be composed towards a (relative) root that will give enough context so that
+  we can understand how to pull that data from the database.
 
-  IMPORTANT NOTE: understand that queries *must* compose all the way to the root or your UI or Om can't find them!
+  IMPORTANT NOTE: understand that queries *must* compose all the way to the root or your UI or Om won't find them!
+
   My \"relativity\" comment above is about the fact that the *context* of understanding the query bits is relative.
 
   Examples might be:
@@ -122,8 +144,7 @@
   [{:company/active-employees (om/get-query Person)}]
   ```
 
-  Get a very specific user (using an ident, which is explained later..basically it is a way to name a specific
-  bit of data uniquely):
+  Get a very specific user (using an ident):
 
   ```
   [{[:user/by-id 42] (om/get-query Person)}]
@@ -168,13 +189,6 @@
 
   You should edit this document (`C_Queries.cljs`) and play with the sample-rendering-with-result-data card. The
   code for the UI for this example is in `tutorial/om_tutorial/queries/query_demo.cljs`.
-
-  Once you've understood the above, you might want to proceed to the section on the [App Database](#!/om_tutorial.D_App_Database).
-
-  TODO:
-
-  - Quoting
-
 
   ## More Advanced Queries
 
