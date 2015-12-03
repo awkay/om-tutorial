@@ -34,7 +34,7 @@
   # UI
 
   Om uses <a href=\"https://facebook.github.io/react/index.html\" target=\"_blank\">React</a> underneath.
-  The primary mechanim for creating components is the `defui` macro:"
+  The primary mechanism for creating components is the `defui` macro:"
   (dc/mkdn-pprint-source Widget)
   "This macro generates a React Class as a plain javascript class, so it is completely compatible with the
   React ecosystem.
@@ -136,6 +136,11 @@
   whether or not you use the rest of the features of Om. A root component calls the factory functions of subcomponents
   with an edn map as the first argument. That map is accessed using `om/props` on `this` within the subcomponent. Data
   is passed from component to component through `props`.
+
+  You might notice something new here: the `om/factory` function is supplied with an additional map `{:keyfn :name}`.
+  The factory function can be optionally supplied with two keywords: `:keyfn` and `:validator`. `:keyfn` produces the
+  <a href=\"https://facebook.github.io/react/docs/multiple-components.html\" target=\"_blank\">React key property</a>
+  from component props (here it's `:name`), while `:validator`takes a function that asserts the validity of the props received.
 
   ## Play With It
 
