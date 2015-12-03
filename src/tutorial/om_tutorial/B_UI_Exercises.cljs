@@ -130,7 +130,7 @@
                                      (dom/button #js {} "Save")
                                      (dom/button #js {} "Refresh List")
                                      ; TODO: (ex 4) pass deletePerson as the onDelete handler to person element
-                                     (dom/ul nil (map #(person %) people))))
+                                     (dom/ul nil (map #(om-person %) people))))
                           )
                  )
                )
