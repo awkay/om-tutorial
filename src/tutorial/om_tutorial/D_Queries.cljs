@@ -5,10 +5,16 @@
   (:require [om.next :as om :refer-macros [defui]]
             [om.next.impl.parser :as p]
             [om.dom :as dom]
+            [goog.dom :as gdom]
+            [goog.object :as gobj]
             [cljs.reader :as r]
             [om-tutorial.queries.query-demo :as qd]
             [devcards.core :as dc :refer-macros [defcard defcard-doc]]
-            ))
+            [cljsjs.codemirror]
+            [cljsjs.codemirror.mode.clojure]
+            [cljsjs.codemirror.addons.matchbrackets]
+            [cljsjs.codemirror.addons.closebrackets]
+            [cljs.pprint :as pp :refer [pprint]]))
 
 (defcard-doc
   "
@@ -117,7 +123,75 @@
   A more interesting database has some tables in it, like we saw in the App Database section. Let's play with
   queries on one of those.")
 
+
+;________________________________________________
+;                                                |
+;         Code Mirror                            |
+;                                                |
+;________________________________________________|
+
+(def cm-opts
+  #js {:fontSize 8
+       :lineNumbers true
+       :matchBrackets true
+       :autoCloseBrackets true
+       :indentWithTabs false
+       :mode #js {:name "clojure"}})
+
+(defn textarea->cm
+  "Decorate a textarea with a CodeMirror editor given an id and code as string."
+  [id code]
+  (let [ta (gdom/getElement id)]
+    (js/CodeMirror
+      #(.replaceChild (.-parentNode ta) % ta)
+      (doto cm-opts
+        (gobj/set "value" code)))))
+
+(defn pprint-src
+  "Pretty print src for CodeMirro editorr"
+  [s]
+  (-> s
+      r/read-string
+      pprint
+      with-out-str))
+
+
+;________________________________________________
+;                                                |
+;         Query Editor                           |
+;                                                |
+;________________________________________________|
+(defui QueryEditor
+  Object
+  (componentDidMount [this]
+    (let [props @(om/props this)
+          src (-> props :query pprint-src)
+          cm (textarea->cm "query-editor" src)]
+      (om/update-state! this assoc :cm cm)))
+  (render [this]
+    (let [props (om/props this)
+          local (om/get-state this)]
+      (dom/div nil
+              (dom/textarea #js {:id       "query-editor"})
+               (dom/button #js {:onClick #(let [query (.getValue (:cm local))]
+                                           (swap! props assoc :query-result (run-query (:db @props) query)
+                                                  :query query))} "Run Query")))))
+
+(def query-editor (om/factory QueryEditor))
+
 (defcard query-example-2
+         query-editor
+         {:query "[{:table [:name {:data [:disk-activity]}]}   {:chart [:name {:data [:disk-activity :cpu-usage]}]}]"
+          :query-result {}
+          :db           {:table      {:name "Disk Performance Table" :data [:statistics :performance]}
+                         :chart      {:name "Combined Graph" :data [:statistics :performance]}
+                         :statistics {:performance {
+                                                    :cpu-usage        [45 15 32 11 66 44]
+                                                    :disk-activity    [11 34 66 12 99 100]
+                                                    :network-activity [55 87 20 01 22 82]}}}}
+         {:inspect-data true})
+
+#_(defcard query-example-2
          "This database (in :db below) has some performance statistics linked into a table and chart. Note that
          the query for the table is for the disk data, while the chart is combining multiple bits of data. Play with the query a bit
          to make sure you understand it (e.g. erase it and try to write it from scratch).
@@ -126,7 +200,8 @@
          "
          (fn [state-atom _]
            (dom/div nil
-                    (dom/input #js {:type "text" :value (:query @state-atom)
+                    (dom/textarea #js {:type "text" :value (:query @state-atom)
+                                       :rows 4
                                     :size 120
                                     :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
                     (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
