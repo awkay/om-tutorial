@@ -103,7 +103,7 @@
 
   By now you might have realized that you can just put just about everything into this table format.
 
-  For example if I have mutliple different lists of people I might choose to store
+  For example if I have multiple different lists of people I might choose to store
   *those* in more of a table format:
 
   ```
