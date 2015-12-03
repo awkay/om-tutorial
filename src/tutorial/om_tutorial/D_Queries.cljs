@@ -67,9 +67,21 @@
 
   Except for unions, queries are represented as vectors. Each item in the vector is a request for a data item, or
   is a call to an abstract operation. Data items can indicate joins by nesting the given property name
-  in a map.
+  in a map:
 
-  Let's start with a very simple database and query as shown in the card below:"
+  ```
+  [:a :b] ; Query for properties :a and :b
+  [:a {:b [:c]}] ; Query for property :a, and then follow property :b to an object (map) and include property :c from it
+  ```
+
+  The result for the above queries would be maps, keyed by the query selectors:
+
+  ```
+  {:a 1 :b 2} ; possible result for the first
+  {:a 1 :b { :c 3} } ; possible result for the second
+  ```
+
+  So, let's start with a very simple database and play with some queries in the card below:"
   )
 
 (defn run-query [db q]
@@ -78,7 +90,7 @@
     (catch js/Error e "Invalid Query")))
 
 (defcard query-example-1
-         "This query asks for a person's name from the database. You can see our database (:db in the map below)
+         "This query starts out as one that asks for a person's name from the database. You can see our database (:db in the map below)
          has a bunch of top level properties...the entire database is just a single person.
          Play with the query. Ask for this person's age and database ID.
 
@@ -110,7 +122,7 @@
          the query for the table is for the disk data, while the chart is combining multiple bits of data. Play with the query a bit
          to make sure you understand it (e.g. erase it and try to write it from scratch).
 
-         Note that the query result is a map in tree form. A tree is exactly what you need for a UI!
+         Again note that the query result is a map in tree form. A tree is exactly what you need for a UI!
          "
          (fn [state-atom _]
            (dom/div nil
