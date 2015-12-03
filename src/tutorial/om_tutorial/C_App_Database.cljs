@@ -103,7 +103,7 @@
 
   By now you might have realized that you can just put just about everything into this table format.
 
-  For exampe if I have mutliple different lists of people I might choose to store
+  For example if I have mutliple different lists of people I might choose to store
   *those* in more of a table format:
 
   ```
@@ -143,7 +143,7 @@
   }
   ```
 
-  In general, keep you application state flat. The graph nature fixes duplication issues,
+  In general, keep your application state flat. The graph nature fixes duplication issues,
   and the flat structure makes mutation code easy to write and maintain.
   "
   )
