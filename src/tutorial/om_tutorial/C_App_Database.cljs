@@ -145,6 +145,16 @@
 
   In general, keep you application state flat. The graph nature fixes duplication issues,
   and the flat structure makes mutation code easy to write and maintain.
+
+  ## Do I have to Build That???
+
+  No. You do not need to build normalized graph databases. Om can do that for you. You simply
+  create the tree that the UI wants to see, and then hand it to Om and it will use
+  the UI query to reformat that data into the internal database format. We'll see more
+  on that after we talk about queries.
+
+  If you chose to use an alternate database, _then_ you'll have to manage the normalization
+  among oher things (like merging in novelty).
   "
   )
 

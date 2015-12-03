@@ -107,7 +107,7 @@
 
 (defcard query-example-2
          "This database (in :db below) has some performance statistics linked into a table and chart. Note that
-         the query for the table is for the disk data, while the chart is using both. Play with the query a bit
+         the query for the table is for the disk data, while the chart is combining multiple bits of data. Play with the query a bit
          to make sure you understand it (e.g. erase it and try to write it from scratch).
 
          Note that the query result is a map in tree form. A tree is exactly what you need for a UI!
