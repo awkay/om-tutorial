@@ -200,8 +200,7 @@
          "
          (fn [state-atom _]
            (dom/div nil
-                    (dom/textarea #js {:type "text" :value (:query @state-atom)
-                                       :rows 4
+                    (dom/input #js {:type "text" :value (:query @state-atom)
                                     :size 120
                                     :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
                     (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
