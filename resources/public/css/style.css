@@ -3,7 +3,7 @@
 /* http://meyerweb.com/eric/tools/css/reset/
    v2.0 | 20110126
    License: none (public domain)
-*/
+
 
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -25,7 +25,6 @@ time, mark, audio, video {
     font: inherit;
     vertical-align: baseline;
 }
-/* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
     display: block;
@@ -48,7 +47,7 @@ table {
     border-collapse: collapse;
     border-spacing: 0;
 }
-
+*/
 
 
 /* Basic styles
@@ -99,7 +98,7 @@ input[type="text"], input[type="email"], textarea, select{
     color: #888;
     height: 20px;
     line-height:15px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     margin-right: 6px;
     margin-top: 2px;
     outline: 0 none;
@@ -160,7 +159,8 @@ li {
 }
 
 ul {
-    margin: 2em 0;
+   /* margin: 1em 0 1em 1em;
+    list-style: disc;*/
 }
 
 li ul {
@@ -179,4 +179,12 @@ button {
 input,
 button {
     font-size: inherit;
+}
+
+p {
+    margin-bottom: 1em;
+}
+
+div.com-rigsomelight-devcards-padding-top-border {
+    margin-top: 0;
 }

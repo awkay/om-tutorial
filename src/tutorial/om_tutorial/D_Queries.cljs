@@ -43,7 +43,7 @@
     :comment [...subquery...] }             ;;union
   ```
 
-  *RECOMMENDATAION*: Even if you do not plan to use Datomic, I highly recommend
+  *RECOMMENDATION*: Even if you do not plan to use Datomic, I highly recommend
   going through the [Datomic Pull Tutorial](http://docs.datomic.com/pull.html).
   It will really help you with Om Next queries.
 
