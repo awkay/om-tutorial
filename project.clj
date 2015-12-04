@@ -54,10 +54,10 @@
                                :verbose              false
                                :foreign-libs [{:provides ["cljsjs.codemirror.addons.closebrackets"]
                                                :requires ["cljsjs.codemirror"]
-                                               :file     "resources/public/tutorial/closebrackets.js"}
+                                               :file     "resources/public/codemirror/closebrackets.js"}
                                               {:provides ["cljsjs.codemirror.addons.matchbrackets"]
                                                :requires ["cljsjs.codemirror"]
-                                               :file     "resources/public/tutorial/matchbrackets.js"}]}}]}
+                                               :file     "resources/public/codemirror/matchbrackets.js"}]}}]}
 
   :profiles {
              :dev {:source-paths ["src/dev"]
