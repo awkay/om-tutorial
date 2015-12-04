@@ -165,6 +165,23 @@
 
   NOTE: This is where I'm working on the tutorial...
 
+  Plan
+  - Explain a more detailed read function that can suffice for much of the state reading, and is still
+  extensible:
+  ```
+  (defn read-local ; assumes it is only ever called on top-level query, or starting at an ident
+    [{:keys [query state ast] :as env} dkey params]
+    (case dkey
+      :app/locale (deref i18n/*current-locale*) ; non-database item(s)...global atom, e.g.
+      (let [top-level-prop (nil? query) ; joins will have a query
+            key (or (:ast key) dkey) ; use key from AST, unless it is not there
+            by-ident? (om/ident? key) ; detect if the query is based at an ident
+            data (if by-ident? (get-in @state key) (get @state key))] ; get the 'base state' for conversion
+        {:value (if top-level-prop
+                  data
+                  (om/db->tree query data @state))})))
+  ```
+
   "
   )
 

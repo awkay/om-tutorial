@@ -17,7 +17,7 @@
   "
   # Remote Fetch
 
-  TODO
+  TODO: The notes below are a mismash of thoghts...they are more notes to myself as placeholders for what to develop here...
 
   ### Remote Fetch
 
@@ -28,13 +28,15 @@
   (possibly modified). The point is that the remote parse returns the query you want to run on that remote
   (or nothing if you don't have anything to say).
 
-  So, in \"local read mode (target = nil)\" your read functions return *data* as part of a *result*.
+  So, in \"local read mode (target = nil)\" your read functions return *data* for each part of a *result*.
 
-  In remote read mode (target !+ nil) your read functions return query fragments to retain for a query to the server.
+  In remote read mode (target != nil) your read functions return *query fragments* to *retain* as
+   parts of the query to send to the server.
 
-  Since the parser is run once for each remote you can gather up *different* queries to send to *each* remote.
+  Since the parser is run once for each remote you can gather up *different* queries to send to *each* remote. All
+  of them based on the current UI query.
 
-  The reader factory for parsing I've created lets you supply a map from remote name to reader function,
+  The reader factory function for parsing I've created lets you supply a map from remote name to reader function,
   so that you can separate your logic out for each of these query parses.
 
   In remote parsing mode, the parser expects your read functions to return either `{:remote-name true }` or
