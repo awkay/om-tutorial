@@ -5,11 +5,17 @@
   (:require [om.next :as om :refer-macros [defui]]
             [om.next.impl.parser :as p]
             [om.dom :as dom]
+            [goog.dom :as gdom]
+            [goog.object :as gobj]
             [cljs.reader :as r]
             [om-tutorial.queries.query-demo :as qd]
             [devcards.util.edn-renderer :refer [html-edn]]
             [devcards.core :as dc :refer-macros [defcard defcard-doc]]
-            ))
+            [cljsjs.codemirror]
+            [cljsjs.codemirror.mode.clojure]
+            [cljsjs.codemirror.addons.matchbrackets]
+            [cljsjs.codemirror.addons.closebrackets]
+            [cljs.pprint :as pp :refer [pprint]]))
 
 (defcard-doc
   "
@@ -88,10 +94,74 @@
   So, let's start with a very simple database and play with some queries in the card below:"
   )
 
+
+;________________________________________________
+;                                                |
+;         Execute Query                          |
+;                                                |
+;________________________________________________|
+
+
 (defn run-query [db q]
   (try
     (om/db->tree (r/read-string q) db db)
     (catch js/Error e "Invalid Query")))
+
+
+;________________________________________________
+;                                                |
+;         Code Mirror                            |
+;                                                |
+;________________________________________________|
+
+(def cm-opts
+  #js {:fontSize          8
+       :lineNumbers       true
+       :matchBrackets     true
+       :autoCloseBrackets true
+       :indentWithTabs    false
+       :mode              #js {:name "clojure"}})
+
+(defn pprint-src
+  "Pretty print src for CodeMirro editor.
+  Could be included in textarea->cm"
+  [s]
+  (-> s
+      r/read-string
+      pprint
+      with-out-str))
+
+
+(defn textarea->cm
+  "Decorate a textarea with a CodeMirror editor given an id and code as string."
+  [id code]
+  (let [ta (gdom/getElement id)]
+    (js/CodeMirror
+      #(.replaceChild (.-parentNode ta) % ta)
+      (doto cm-opts
+        (gobj/set "value" code)))))
+
+(defui QueryEditor
+  Object
+  (componentDidMount [this]
+    (let [{:keys [query id]} @(om/props this)
+          src (pprint-src query)
+          cm (textarea->cm id src)]
+      (om/update-state! this assoc :cm cm)))
+  (render [this]
+    (let [props (om/props this)
+          local (om/get-state this)]
+      (dom/div nil
+               (dom/textarea #js {:id (:id @props)})
+               (dom/button #js {:onClick #(let [query (.getValue (:cm local))]
+                                           (swap! props assoc :query-result (run-query (:db @props) query)
+                                                  :query query))} "Run Query")
+               (dom/h4 nil "Database")
+               (html-edn (:db @props))
+               (dom/h4 nil "Query Result")
+               (html-edn (:query-result @props))))))
+
+(def query-editor (om/factory QueryEditor))
 
 (defcard query-example-1
          "This query starts out as one that asks for a person's name from the database. You can see our database (:db in the map below)
@@ -103,21 +173,12 @@
          - The query has to be a single vector
          - The result is a map, with keys that match the selectors in the query.
          "
-         (fn [state-atom _]
-           (dom/div nil
-                    (dom/input #js {:type "text" :value (:query @state-atom)
-                                    :size 80
-                                    :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
-                    (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
-                    (dom/h4 nil "Database")
-                    (html-edn (:db @state-atom))
-                    (dom/h4 nil "Query Result")
-                    (html-edn (:query-result @state-atom))
-                    ))
-         {:query "[:person/name]"
+         query-editor
+         {:query        "[:person/name]"
           :query-result {}
-          :db {:db/id 1 :person/name "Sam" :person/age 23}}
-         )
+          :db           {:db/id 1 :person/name "Sam" :person/age 23}
+          :id           "query-example-1"}
+         {:inspect-data false})
 
 (defcard-doc
   "
@@ -138,33 +199,19 @@
          - `[ [:statistics :performance] ]`
          - `[{[:statistics :performance] [:disk-activity]}]`
          "
-         (fn [state-atom _]
-           (dom/div nil
-                    (dom/input #js {:type "text" :value (:query @state-atom)
-                                    :size 120
-                                    :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
-                    (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
-                    (dom/h4 nil "Database")
-                    (html-edn (:db @state-atom))
-                    (dom/h4 nil "Query Result")
-                    (html-edn (:query-result @state-atom))
-                    ))
+         query-editor
          {:query        "[{:table [:name {:data [:disk-activity]}]}   {:chart [:name {:data [:disk-activity :cpu-usage]}]}]"
           :query-result {}
           :db           {:table      {:name "Disk Performance Table" :data [:statistics :performance]}
                          :chart      {:name "Combined Graph" :data [:statistics :performance]}
                          :statistics {:performance {
-                                                    :cpu-usage     [45 15 32 11 66 44]
-                                                    :disk-activity [11 34 66 12 99 100]
-                                                    :network-activity [55 87 20 01 22 82]
-                                                    }}}}
-         {:inspect-data false
-          :history true
-          }
-         )
+                                                    :cpu-usage        [45 15 32 11 66 44]
+                                                    :disk-activity    [11 34 66 12 99 100]
+                                                    :network-activity [55 87 20 01 22 82]}}}
+          :id           "query-example-2"}
+         {:inspect-data false})
 
-
-  (defcard-doc "
+(defcard-doc "
 
   A large percentage of your queries will fall into the property or join variety, so we'll leave the
   rest of the grammar for now, and move on to how these queries work with the UI.
@@ -203,62 +250,62 @@
   Thus, a `Person` component might declare it needs a person's name:
 
   "
-  (dc/mkdn-pprint-source qd/Person)
-  "
+             (dc/mkdn-pprint-source qd/Person)
+             "
 
-  but you have yet to answer \"which one\" by placing it somewhere in a join.
+             but you have yet to answer \"which one\" by placing it somewhere in a join.
 
-  Examples might be:
+             Examples might be:
 
-  Get people that are my friends (e.g. relative to your login cookie):
+             Get people that are my friends (e.g. relative to your login cookie):
 
-  ```
-  [{:current-user/friends (om/get-query Person)}]
-  ```
+             ```
+             [{:current-user/friends (om/get-query Person)}]
+             ```
 
-  Get people that work for the company (context of login):
+             Get people that work for the company (context of login):
 
-  ```
-  [{:company/active-employees (om/get-query Person)}]
-  ```
+             ```
+             [{:company/active-employees (om/get-query Person)}]
+             ```
 
-  Get a very specific user (using an ident):
+             Get a very specific user (using an ident):
 
-  ```
-  [{[:user/by-id 42] (om/get-query Person)}]
-  ```
+             ```
+             [{[:user/by-id 42] (om/get-query Person)}]
+             ```
 
-  The `query-demo.cljs` contains components:
+             The `query-demo.cljs` contains components:
 
-  "
-  (dc/mkdn-pprint-source qd/Person)
-  (dc/mkdn-pprint-source qd/person)
-  (dc/mkdn-pprint-source qd/PeopleWidget)
-  (dc/mkdn-pprint-source qd/people-list)
-  (dc/mkdn-pprint-source qd/Root)
-  "
+             "
+             (dc/mkdn-pprint-source qd/Person)
+             (dc/mkdn-pprint-source qd/person)
+             (dc/mkdn-pprint-source qd/PeopleWidget)
+             (dc/mkdn-pprint-source qd/people-list)
+             (dc/mkdn-pprint-source qd/Root)
+             "
 
-  The above component make the following UI tree:
+             The above component make the following UI tree:
 
-  TODO: UI Tree diagram
+             TODO: UI Tree diagram
 
-  and the queries form the following query tree:
+             and the queries form the following query tree:
 
-  TODO: Query diagram
+             TODO: Query diagram
 
-  because the middle component (PeopleWidget) does not have a query. Pay careful attention to how the queries are
-  composed (among stateful components). It is perfectly fine for a UI component to not participate in the query,
-  in which case you must remember that the walk of render will not match the walk of the result data. This
-  is shown in the above code: note how the root element asks for `:people`, and the render of the root
-  pulls out that data and passes it down. Then note how `PeopleWidget` pulls out the entire properties
-  and passes them on to the component that asked for those details. In fact, you can change `PeopleWidget`
-  into a simple function. There is no specific need for it to be a component, as it is really just doing
-  what the root element needed to do: pass the items from the list of people it queried into the
-  final UI children (`Person`) that asked for the details found in each of the items. The middle widget isn't
-  participating in the state tree generation, it is merely an artifact of rendering.
+             because the middle component (PeopleWidget) does not have a query. Pay careful attention to how the queries are
+             composed (among stateful components). It is perfectly fine for a UI component to not participate in the query,
+             in which case you must remember that the walk of render will not match the walk of the result data. This
+             is shown in the above code: note how the root element asks for `:people`, and the render of the root
+             pulls out that data and passes it down. Then note how `PeopleWidget` pulls out the entire properties
+             and passes them on to the component that asked for those details. In fact, you can change `PeopleWidget`
+             into a simple function. There is no specific need for it to be a component, as it is really just doing
+             what the root element needed to do: pass the items from the list of people it queried into the
+             final UI children (`Person`) that asked for the details found in each of the items. The middle widget isn't
+             participating in the state tree generation, it is merely an artifact of rendering.
 
-  So, this example will render correctly when the query result looks like what you see in the card below:
-")
+             So, this example will render correctly when the query result looks like what you see in the card below:
+           ")
 
 (defcard sample-rendering-with-result-data
          (fn [state _] (qd/root @state))
