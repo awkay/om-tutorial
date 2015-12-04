@@ -90,38 +90,18 @@
   So, let's start with a very simple database and play with some queries in the card below:"
   )
 
+
+;________________________________________________
+;                                                |
+;         Execute Query                          |
+;                                                |
+;________________________________________________|
+
+
 (defn run-query [db q]
   (try
     (om/db->tree (r/read-string q) db db)
     (catch js/Error e "Invalid Query")))
-
-(defcard query-example-1
-         "This query starts out as one that asks for a person's name from the database. You can see our database (:db in the map below)
-         has a bunch of top level properties...the entire database is just a single person.
-         Play with the query. Ask for this person's age and database ID.
-
-         Notes:
-
-         - The query has to be a single vector
-         - The result is a map, with keys that match the selectors in the query.
-         "
-         (fn [state-atom _]
-           (dom/div nil
-                    (dom/input #js {:type "text" :value (:query @state-atom)
-                                    :size 80
-                                    :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
-                    (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
-                    ))
-         {:query "[:person/name]"
-          :query-result {}
-          :db {:db/id 1 :person/name "Sam" :person/age 23}}
-         {:inspect-data true}
-         )
-
-(defcard-doc
-  "
-  A more interesting database has some tables in it, like we saw in the App Database section. Let's play with
-  queries on one of those.")
 
 
 ;________________________________________________
@@ -138,6 +118,16 @@
        :indentWithTabs false
        :mode #js {:name "clojure"}})
 
+(defn pprint-src
+  "Pretty print src for CodeMirro editor.
+  Could be included in textarea->cm"
+  [s]
+  (-> s
+      r/read-string
+      pprint
+      with-out-str))
+
+
 (defn textarea->cm
   "Decorate a textarea with a CodeMirror editor given an id and code as string."
   [id code]
@@ -147,37 +137,71 @@
       (doto cm-opts
         (gobj/set "value" code)))))
 
-(defn pprint-src
-  "Pretty print src for CodeMirro editorr"
-  [s]
-  (-> s
-      r/read-string
-      pprint
-      with-out-str))
-
 
 ;________________________________________________
 ;                                                |
 ;         Query Editor                           |
 ;                                                |
 ;________________________________________________|
+
 (defui QueryEditor
   Object
   (componentDidMount [this]
-    (let [props @(om/props this)
-          src (-> props :query pprint-src)
-          cm (textarea->cm "query-editor" src)]
+    (let [{:keys [query id]} @(om/props this)
+          src (pprint-src query)
+          cm (textarea->cm id src)]
       (om/update-state! this assoc :cm cm)))
   (render [this]
     (let [props (om/props this)
           local (om/get-state this)]
       (dom/div nil
-              (dom/textarea #js {:id       "query-editor"})
+               (dom/textarea #js {:id      (:id @props)})
                (dom/button #js {:onClick #(let [query (.getValue (:cm local))]
                                            (swap! props assoc :query-result (run-query (:db @props) query)
                                                   :query query))} "Run Query")))))
 
 (def query-editor (om/factory QueryEditor))
+
+
+
+;________________________________________________
+;                                                |
+;         Query Example 1                        |
+;                                                |
+;________________________________________________|
+
+
+
+(defcard query-example-1
+         "This query starts out as one that asks for a person's name from the database. You can see our database (:db in the map below)
+         has a bunch of top level properties...the entire database is just a single person.
+         Play with the query. Ask for this person's age and database ID.
+
+         Notes:
+
+         - The query has to be a single vector
+         - The result is a map, with keys that match the selectors in the query.
+         "
+         query-editor
+         {:query "[:person/name]"
+          :query-result {}
+          :db {:db/id 1 :person/name "Sam" :person/age 23}
+          :id "query-example-1"}
+         {:inspect-data true})
+
+(defcard-doc
+  "
+  A more interesting database has some tables in it, like we saw in the App Database section. Let's play with
+  queries on one of those.")
+
+
+
+;________________________________________________
+;                                                |
+;         Query Example 2                        |
+;                                                |
+;________________________________________________|
+
 
 (defcard query-example-2
          query-editor
@@ -188,7 +212,8 @@
                          :statistics {:performance {
                                                     :cpu-usage        [45 15 32 11 66 44]
                                                     :disk-activity    [11 34 66 12 99 100]
-                                                    :network-activity [55 87 20 01 22 82]}}}}
+                                                    :network-activity [55 87 20 01 22 82]}}}
+          :id "query-example-2"}
          {:inspect-data true})
 
 #_(defcard query-example-2
