@@ -5,7 +5,8 @@
                  [devcards "0.2.1" :exclusions [org.omcljs/om]]
                  [datascript "0.13.3"]
                  [org.omcljs/om "1.0.0-alpha24"]
-                 [figwheel-sidecar "0.5.0-2" :scope "test"]]
+                 [figwheel-sidecar "0.5.0-2" :scope "test"]
+                 [cljsjs/codemirror "5.8.0-0"]]
 
   :source-paths ["src/main" "src/cards" "src/tutorial"]
 
@@ -50,7 +51,13 @@
                                :output-dir           "resources/public/tutorial"
                                :parallel-build       true
                                :recompile-dependents true
-                               :verbose              false}}]}
+                               :verbose              false
+                               :foreign-libs [{:provides ["cljsjs.codemirror.addons.closebrackets"]
+                                               :requires ["cljsjs.codemirror"]
+                                               :file     "resources/public/codemirror/closebrackets-min.js"}
+                                              {:provides ["cljsjs.codemirror.addons.matchbrackets"]
+                                               :requires ["cljsjs.codemirror"]
+                                               :file     "resources/public/codemirror/matchbrackets-min.js"}]}}]}
 
   :profiles {
              :dev {:source-paths ["src/dev"]
