@@ -4,44 +4,184 @@
     )
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
+            [devcards.util.edn-renderer :refer [html-edn]]
             [devcards.core :as dc :refer-macros [defcard defcard-doc deftest]]
             [cljs.reader :as r]
             [om.next.impl.parser :as p]))
+
+(defcard-doc
+  "
+  # State Reads and Parsing
+
+  ## The Problem
+
+  Once you have your application state in a client database you need to get that data onto the screen.
+
+  There are two interesting pieces to that puzzle:
+
+  - Getting an initial UI on the screen
+  - Asking for data from one or more servers, and having that novelty appear on the screen
+  once it is returned.
+
+  This is complicated by the fact that Om lets you define your database format. For the
+  purposes of this tutorial, we're going to assume you're using the default database
+  format, which has the distinct advantage of solving a lot of the problems for you.
+
+  ## The Solution
+
+  In this section we're only going to address the local state. Getting data from a server
+  is in a later chapter.
+
+  In the Queries section we stated the fact that the queries are composed to the root of the UI, and
+  (except for optimization cases explained later) is passed through the root to whatever child
+  needs it. Om actually does a little better than that, but you should think of it that way for
+  now.
+
+  So, how do you we Om to take the data out of the app state database (which you invented)
+  and give it to the UI?
+
+  The answer is that Om supplies you with a query grammar *parser* that understands the syntax
+  of queries. You are required to create an instance of this parser, and plug in a state read
+  function that does the conversion from the data item being requested to a result.
+
+  Fortunately, if you're using the default database format then you can get a lot of the work
+  done for you by leveraging `db->tree`, which knows how to convert non-parameterized queries
+  into a proper state tree format needed for the return value of these reads.
+
+  Before we just hand you that answer, you should understand the basics of the parser mechanism,
+  since you will end up needing to do more than the provided `db->tree` can do alone.
+
+  ## The Om Parser
+
+  The Om parser is exactly what it sounds like: a parser for the query grammar. Now, formally
+  a parser is something that takes apart input data and figures out what the parts mean (e.g.
+  that's a join, that's a mutation call, etc.). In an interpreter, each time the parser finds
+  a bit of meaning, it invokes a function to interpret that meaning and emit a result.
+  In this case, the meaning is a bit of result data; thus, for Om to be able to generate a
+  result from the parser, you must supply the \"read\" emitter.
+
+  First, let's see what an Om parser in action.
+  ")
+
+(defcard om-parser
+         "This card will run an Om parser on an arbitrary query, record the calls to the read emitter,
+         and show the trace of those calls in order. Feel free to look at the source of this card.
+
+         Essentially, it creates an Om parser:
+
+         ```
+         (om/parser {:read read-tracking})
+         ```
+
+         where the `read-tracking` simply stores details of each call in an atom and shows those calls
+         when parse is complete.
+
+         The signature of a read function is:
+
+         `(read [env dispatch-key params])`
+
+         where the env contains the state of your application, a reference to your parser (so you can
+         call it recursively, if you wish), a query root marker, an AST node describing the exact
+         details of the element's meaning, a path, and *anything else* you want to put in there if
+         you call the parser recursively.
+
+         Try some queries like these:
+
+         - `[:a :b]`
+         - `[:a {:b [:c]}]` (note that the AST is recursively built, but only the top keys are actually parsed to trigger reads)
+         - `[(:a { :x 1 })]`  (note the value of params)
+         "
+         (fn [state _]
+           (let [{:keys [v error]} @state
+                 trace (atom [])
+                 read-tracking (fn [env k params]
+                                 (swap! trace conj {:env          (assoc env :parser :function-elided)
+                                                    :dispatch-key k
+                                                    :params       params}))
+                 parser (om/parser {:read read-tracking})]
+             (dom/div nil
+                      (when error
+                        (dom/div nil (str error)))
+                      (dom/input #js {:type     "text"
+                                      :value    v
+                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+                      (dom/button #js {:onClick #(try
+                                                  (reset! trace [])
+                                                  (swap! state assoc :error nil)
+                                                  (parser {:state {:app-state :your-app-state-here}} (r/read-string v))
+                                                  (swap! state assoc :result @trace)
+                                                  (catch js/Error e (swap! state assoc :error e))
+                                                  )} "Run Parser")
+                      (dom/h4 nil "Parsing Trace")
+                      (html-edn (:result @state))
+                      )))
+         {}
+         {:inspect-data false})
+
+(defn read-person [env dispatch-key params]
+  (case dispatch-key
+    :name {:value "Sally"} ; important...wrap real result values in a map with key :value
+    :age {:value 23}
+    :not-found
+    ))
+(def person-parser (om/parser {:read read-person}))
+(def person-query [:name :age])
+
+(defcard-doc
+  "To indicate that you've found data your read function simply returns the value for the item being requested
+  wrapped in a map with the key `:value`. So, if you were writing
+   a really simple static application, your read function can just invent the data...no need for a database
+   at all. Your read function could just be:
+   "
+  (dc/mkdn-pprint-source read-person)
+  "and the parser:"
+  (dc/mkdn-pprint-source person-parser)
+  "which when run on this query:"
+  (dc/mkdn-pprint-source person-query)
+  "using:"
+  '(person-parser {:state :none} person-query)
+  "will result in this value:"
+  (person-parser {:state :none} person-query)
+  "Notice that the output of the parser is a properly structured map matching the query structure.
+
+  Another way of looking at what the parser does for state reads is that it constructs the *structure* of
+  the result, and calls your read function to supply the data at each node of that structure.
+
+  ## More Advanced Parsing
+
+  So far we've seen the following things about parsing:
+
+  - Parsing a query calls a read function for each top-level item in a query
+  - The read function may return a value within a map, under the key `:value`
+  - The parser will generate the result map (for these top-level keys) and fill in the values
+  that the read function returned.
+
+  In order to build a full result tree, you're going to have to follow the joins. At some
+  point you'll reach a point where you'll need to manually do this. We'll cover that in a later
+  section. For now, realize that if nothing else was done for you, then your read functions
+  would need to recursively call the parser. Fortunately, if you're using the default database
+  format then there is already a helper function that can do that part for most data-only
+  queries: `db->tree`.
+
+  "
+  )
 
 (let [sam {:db/id 1 :person/name "Sam" :person/mate [:people/by-id 2]}
       jenny {:db/id 2 :person/name "Jenny" :person/mate [:people/by-id 1]}
       app-state {:widget/people [[:people/by-id 1] [:people/by-id 2]]
                  :people/by-id  {1 sam 2 jenny}
                  }]
-  (defcard-doc
-    "
-    # State Reads and Parsing
-
-    As we said in the Queries section: the queries are composed to the root of the UI, and
-    (except for optimization cases) looks as if it passed throught the root to whatever child
-    needs it. Om actually does a little better than that, but you should think of it that way for
-    now.
-
-    So, how do you get Om to take the data out of the app state database (which you invented)
-    and give it in the UI?
-
-    The answer is that Om supplies you with a query grammar parser that understands the syntax
-    of queries. As it hits each node of a query it is programmed (by you) to call read functions
-    that retrieve the data.
-
-    Fortunately, if you're using the default database format then you can get a lot of the work
-    done for you by leveraging `db->tree`.
-
+  (defcard-doc "
     ## Using `db->tree`
 
-    You can do a lot of work to build parsing and reads, but Om comes with a very nice function for turning a UI query
+    Om comes with a very nice function for turning a UI query
     into the desired data from a normalized (default-format) database. With liberal use of idents as links in the graph
     almost all of your real state can be at the \"top\"  of the actual application state database.
 
     For example, given app state (the following are live tests you can play with in the source of this file):
     "
-    app-state
-    )
+               app-state
+               )
   (deftest db-tree-tests
            "
            - You can read a top-level ident query (no id part, special use of `_`):

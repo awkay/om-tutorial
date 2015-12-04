@@ -7,6 +7,7 @@
             [om.dom :as dom]
             [cljs.reader :as r]
             [om-tutorial.queries.query-demo :as qd]
+            [devcards.util.edn-renderer :refer [html-edn]]
             [devcards.core :as dc :refer-macros [defcard defcard-doc]]
             ))
 
@@ -67,12 +68,15 @@
 
   Except for unions, queries are represented as vectors. Each item in the vector is a request for a data item, or
   is a call to an abstract operation. Data items can indicate joins by nesting the given property name
-  in a map:
+  in a map with exactly one key:
 
   ```
   [:a :b] ; Query for properties :a and :b
   [:a {:b [:c]}] ; Query for property :a, and then follow property :b to an object (map) and include property :c from it
   ```
+
+  The join key indicates that a keyword of that name exists on the data being queried,
+  and the value is either a map (for a to-one relation) or a vector (to-many).
 
   The result for the above queries would be maps, keyed by the query selectors:
 
@@ -105,11 +109,14 @@
                                     :size 80
                                     :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
                     (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
+                    (dom/h4 nil "Database")
+                    (html-edn (:db @state-atom))
+                    (dom/h4 nil "Query Result")
+                    (html-edn (:query-result @state-atom))
                     ))
          {:query "[:person/name]"
           :query-result {}
           :db {:db/id 1 :person/name "Sam" :person/age 23}}
-         {:inspect-data true}
          )
 
 (defcard-doc
@@ -123,6 +130,13 @@
          to make sure you understand it (e.g. erase it and try to write it from scratch).
 
          Again note that the query result is a map in tree form. A tree is exactly what you need for a UI!
+
+         Some interesting queries to try:
+
+         - `[:table]`
+         - `[{:chart [{:data [:cpu-usage]}]}]`
+         - `[ [:statistics :performance] ]`
+         - `[{[:statistics :performance] [:disk-activity]}]`
          "
          (fn [state-atom _]
            (dom/div nil
@@ -130,6 +144,10 @@
                                     :size 120
                                     :onChange (fn [e] (swap! state-atom assoc :query (.. e -target -value)))})
                     (dom/button # js {:onClick #(swap! state-atom assoc :query-result (run-query (:db @state-atom) (:query @state-atom)))} "Run Query")
+                    (dom/h4 nil "Database")
+                    (html-edn (:db @state-atom))
+                    (dom/h4 nil "Query Result")
+                    (html-edn (:query-result @state-atom))
                     ))
          {:query        "[{:table [:name {:data [:disk-activity]}]}   {:chart [:name {:data [:disk-activity :cpu-usage]}]}]"
           :query-result {}
@@ -140,40 +158,55 @@
                                                     :disk-activity [11 34 66 12 99 100]
                                                     :network-activity [55 87 20 01 22 82]
                                                     }}}}
-         {:inspect-data true}
+         {:inspect-data false
+          :history true
+          }
          )
 
 
   (defcard-doc "
 
-  TODO: Continue rewrite from here....
-
+  A large percentage of your queries will fall into the property or join variety, so we'll leave the
+  rest of the grammar for now, and move on to how these queries work with the UI.
 
   ## Co-located Queries on Components
 
-  After playing with the database and queries, you now see that query results from simple properties and joins
-  through the graph can be used to generate an arbitrary tree of data for your UI. Now the next step is to
-  localize the bits of query onto the components that need the related data.
+  OK, now things start to get really cool, because now that you understand the basic UI, queries, and the app
+  database format, we're ready to combine them. After all, our goal is to make a webapp isn't it?
 
-  ### Relativity
+  ### The Problem
 
-  No, not that kind...
+  So, we've seen great ways to lay out our data into these nice graph databases, and we've seen how
+  to query them. Two questions remain:
 
-  Placing a query on a component declares what data that component needs in order to render correctly. Since
-  components are little fragments of UI, the queries on them are little fragments as well (e.g. they are detached from anything
-  specific until placed in a tree). Thus, a `Person` component might declare it needs the person's name, but you have
-  yet to answer \"which one\":
+  1. What's the easiest way to get my data into one of these databases?
+  2. How does this relate to my overall UI?
+
+  ### The Solution
+
+  These two questions are tightly related. David Nolen had this wonderful realization that when
+  rendering the tree of your UI you are doing the same thing as when you're evaluating a graph
+  query.
+
+  Both the *UI render* and *running the query* are \"walks\" of a graph of data. Furthermore,
+  if the UI tree participates in defining which bits of the query have distinct identity,
+  then you can use *that* information to walk both (a sample tree and the current UI query) at
+  the same time and take the process in reverse (from a *sample* UI tree into the desired graph
+  database format)!
+
+  ## Details
+
+  So, let's see how that works.
+
+  Placing a query on a component declares what data that component needs in order to render correctly.
+  Components are little fragments of UI, so the queries on them are little fragments of the query.
+  Thus, a `Person` component might declare it needs a person's name:
 
   "
   (dc/mkdn-pprint-source qd/Person)
   "
 
-  For this query to make sense it must be composed towards a (relative) root that will give enough context so that
-  we can understand how to pull that data from the database.
-
-  IMPORTANT NOTE: understand that queries *must* compose all the way to the root or your UI or Om won't find them!
-
-  My \"relativity\" comment above is about the fact that the *context* of understanding the query bits is relative.
+  but you have yet to answer \"which one\" by placing it somewhere in a join.
 
   Examples might be:
 
@@ -209,12 +242,20 @@
 
   TODO: UI Tree diagram
 
-  But the queries form the following query tree:
+  and the queries form the following query tree:
 
   TODO: Query diagram
 
   because the middle component (PeopleWidget) does not have a query. Pay careful attention to how the queries are
-  composed (among stateful components).
+  composed (among stateful components). It is perfectly fine for a UI component to not participate in the query,
+  in which case you must remember that the walk of render will not match the walk of the result data. This
+  is shown in the above code: note how the root element asks for `:people`, and the render of the root
+  pulls out that data and passes it down. Then note how `PeopleWidget` pulls out the entire properties
+  and passes them on to the component that asked for those details. In fact, you can change `PeopleWidget`
+  into a simple function. There is no specific need for it to be a component, as it is really just doing
+  what the root element needed to do: pass the items from the list of people it queried into the
+  final UI children (`Person`) that asked for the details found in each of the items. The middle widget isn't
+  participating in the state tree generation, it is merely an artifact of rendering.
 
   So, this example will render correctly when the query result looks like what you see in the card below:
 ")
@@ -229,11 +270,6 @@
          )
 
 (defcard-doc "
-  In the above example, you could have just as well defined the intermediate node as a plain function, and saved
-  yourself some typing (and the need to unpack props in the middle).
-
-  You should edit this document (`C_Queries.cljs`) and play with the sample-rendering-with-result-data card. The
-  code for the UI for this example is in `tutorial/om_tutorial/queries/query_demo.cljs`.
 
   ## More Advanced Queries
 
@@ -245,22 +281,18 @@
 
   ### Looking up by Ident
 
-  An Ident (or reference) is a vector with 2 elements. The first is a keyword, and the second is some kind of
-  selector (e.g. numeric id). These can be used in place of a property name to indicate a specific instance
-  of some object in the database. This provides explicit context from which the remainder of the query
-  can be evaluated. This is a semantic meaning. You're going to be writing the portion of the query processing engine
-  that understands what these refer to in the real application state.
-
-  more TODO
+  An Ident is a vector with 2 elements. The first is a keyword and the second is some kind of
+  value (e.g. keyword, numeric id, etc.). These are the same idents you saw in the App Database section,
+  and can be used in place of a property name to indicate a specific instance
+  of some object in the database (as property access or a join). This provides explicit context from
+  which the remainder of the query can be evaluated.
 
   ### Union Queries
 
-  When a component is showing a sequence of things, and each of those things might be different, then you need
+  When a component is showing a sequence of things and each of those things might be different, then you need
   a union query. Basically, it is a *join*, but it names all of the alternative things that might appear
   in the resulting collection. Instead of being a vector, unions are maps of vectors (where each value in the map
-  is the query for the keyed kind of thing).
-
-  more TODO
+  is the query for the keyed kind of thing). They look like multiple joins all merged into a single map.
 
   ## Common Mistakes
 
@@ -287,10 +319,10 @@
 
   because they think \"this component just needs what the child needs\". If that is truly the case, then
   Widget should not have a query at all (the parent should compose OtherWidget's into it's own query). The most common
-  location where this happens is at the root, where you my not want any specific data yourself.
+  location where this happens is at the root, where you may not want any specific data yourself.
 
-  In that case, you *do* need a stateful component, but you'll need to get the child data using a join, then
-  pick it apart via code and manually pass those props down:
+  In that case, you *do* need a stateful component at the root, but you'll need to get the child data
+  using a join, and then pick it apart via code and manually pass those props down:
 
   ```
   (defui RootWidget
@@ -306,7 +338,5 @@
   Sometimes you're just trying to clean up code and factor bits out. Don't feel like you have to wrap UI code in
   `defui` if it doesn't need any support from React or Om. Just write a function! `PeopleWidget` earlier in this
   document is a great example of this.
-
-  ### TODO
   ")
 

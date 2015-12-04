@@ -12,7 +12,7 @@
                     (let [schema {:person/mate {:db/cardinality :db.cardinality/one}}
                           conn (d/create-conn schema)]
                       (d/transact conn
-                                  [{:db/id 1 :person/name "Sam" :person/mate 2}
+                                  [{:db/id 1 :person/name "Sam" :person/mate 2 :n/a 2}
                                    {:db/id 2 :person/name "Tammy" :person/mate 1}])
                       conn)))
 

@@ -133,28 +133,25 @@
   Not everything has to go into an ident-compatible table format, but avoid nesting ui-concerns
   into your application state.
 
-  In fact, Om has great support for true UI singletons in queries (as we'll see). So if you
-  have this kind of data just use (namespaced) keywords at the top level:
+  In fact, Om has great support for true singletons in the database (and queries, as we'll see). So if you
+  have this kind of data just store it under a (namespaced) keyword at the top level:
 
   ```
-  { :modal/error { :message \"There was an error\" }
-    :friend-list [ [:people/by-id 1] ]
-    ...
-  }
+  { :current/user {:user/name ...} }
   ```
 
   In general, keep your application state flat. The graph nature fixes duplication issues,
   and the flat structure makes mutation code easy to write and maintain.
 
-  ## Do I have to Build That???
+  ## Bleh, manual graph building...Do I have to build that by hand???
 
   No. You do not need to build normalized graph databases. Om can do that for you. You simply
   create the tree that the UI wants to see, and then hand it to Om and it will use
   the UI query to reformat that data into the internal database format. We'll see more
   on that after we talk about queries.
 
-  If you chose to use an alternate database, _then_ you'll have to manage the normalization
-  among oher things (like merging in novelty).
+  If you chose to use an alternate database format, _then_ you'll have to manage the normalization
+  among other things (like merging in novelty).
   "
   )
 
