@@ -163,6 +163,8 @@
   format then there is already a helper function that can do that part for most data-only
   queries: `db->tree`.
 
+  NOTE: This is where I'm working on the tutorial...
+
   "
   )
 

@@ -1,6 +1,8 @@
 (ns om-tutorial.om-503
   (:require [om.next :as om]))
 
+;; This is the code of a pending Om bug fix, needed by this demo app. The fix is standalone code, so I imported it here.
+
 (defn rewrite [rewrite-map result]
   (letfn [(step [new-result [k orig-paths]]
             (let [result-to-move (get result k)
