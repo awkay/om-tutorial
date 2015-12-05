@@ -340,7 +340,31 @@
   a union query. Basically, it is a *join*, but it names all of the alternative things that might appear
   in the resulting collection. Instead of being a vector, unions are maps of vectors (where each value in the map
   is the query for the keyed kind of thing). They look like multiple joins all merged into a single map.
+  ")
 
+(defcard union-queries
+         "This database (in :db below)
+
+          Some interesting queries to try:
+
+          - `[{:panels {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]` (access a list)
+          - `[{:current-panel {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]`  (access a singleton)
+          - `[{[:panelA 1] {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]`  (access a singleton by ident)
+         "
+         query-editor
+         {:query        "[{:panels {:panelA [:boo] :panelB [:goo] :panelC [:sticky]}}]"
+          :query-result {}
+          :db           {
+                         :panels [[:panelA 1] [:panelB 1][:panelC 1]]
+                         :panelA { 1 {:boo 42}}
+                         :panelB { 1 {:goo 8}}
+                         :panelC { 1 {:sticky true}}
+                         :current-panel [:panelA 1]
+                         }
+          :id           "union-queries"}
+         {:inspect-data false})
+
+(defcard-doc "
   ## Common Mistakes
 
   ### Failing to Reach the UI Root

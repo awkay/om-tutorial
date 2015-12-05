@@ -16,6 +16,9 @@
     be client unique, but will often be based on real server-persisted data. Examples might be `[:people/by-id 3]`
     and `[:ui.button/by-id 42]`. Om can use these to find components that share state and should update together,
     and for other things like parse optimization.
+  - `Join`: A join is a database term used when a value is used to refer to another. Joins can be to-one or to-many. In
+  Om, a to-one join will reference a map, and a to-many will refer to a vector. In both cases, a selector is supplied
+  (e.g. `[{:join [:prop]}]`) and the selector (`[:join]`) will be applied to each of the items found.
   - `Stateless Component`: A component defined by `defui` that has no query. Such components must not change the structure
   of the incoming props (they must pass them down without removing structure).
   ")

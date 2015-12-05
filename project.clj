@@ -4,7 +4,7 @@
                  [org.clojure/clojurescript "1.7.170" :scope "provided"]
                  [devcards "0.2.1" :exclusions [org.omcljs/om]]
                  [datascript "0.13.3"]
-                 [org.omcljs/om "1.0.0-alpha24"]
+                 [org.omcljs/om "1.0.0-alpha25"]
                  [figwheel-sidecar "0.5.0-2" :scope "test"]
                  [cljsjs/codemirror "5.8.0-0"]]
 
