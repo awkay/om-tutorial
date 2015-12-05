@@ -101,7 +101,7 @@
 
   ## Everything in Tables
 
-  By now you might have realized that you can just put just about everything into this table format.
+  By now you might have realized that you can put just about everything into this table format.
 
   For example if I have multiple different lists of people I might choose to store
   *those* in more of a table format:
@@ -118,9 +118,9 @@
 
   ## Some things not in tables?
 
-  In practice, many things in you UI are really singletons. So, in practice it often makes
-  perfect sense to just store those things in the top level of your overall application state,
-  or even as a simple tree.
+  In practice, some things in your application are really singletons (such as the details of
+  the current user). So, in practice it makes perfect sense to just store those things
+  in the top level of your overall application state.
 
   One criteria you might consider before placing data into a tree is changing it over time (in
   value or location). If you nest some bit of state way down in a tree and need to update
@@ -130,10 +130,7 @@
   and starts to look like a controller from MVC. It also means that if you write a different
   (e.g. mobile) UI, you won't easily re-use that bit of code.
 
-  Not everything has to go into an ident-compatible table format, but avoid nesting ui-concerns
-  into your application state.
-
-  In fact, Om has great support for true singletons in the database (and queries, as we'll see). So if you
+  Om has great support for true singletons in the database (and queries, as we'll see). So if you
   have this kind of data just store it under a (namespaced) keyword at the top level:
 
   ```
@@ -141,6 +138,7 @@
   ```
 
   In general, keep your application state flat. The graph nature fixes duplication issues,
+  allows you to easily generate a tree for rendering (as we'll see soon),
   and the flat structure makes mutation code easy to write and maintain.
 
   ## Bleh, manual graph building...Do I have to build that by hand???
@@ -154,5 +152,4 @@
   among other things (like merging in novelty).
   "
   )
-
 

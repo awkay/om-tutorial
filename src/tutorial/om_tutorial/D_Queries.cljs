@@ -4,9 +4,8 @@
     )
   (:require [om.next :as om :refer-macros [defui]]
             [om.next.impl.parser :as p]
+            [om-tutorial.queries.query-editing :as qe]
             [om.dom :as dom]
-            [goog.dom :as gdom]
-            [goog.object :as gobj]
             [cljs.reader :as r]
             [om-tutorial.queries.query-demo :as qd]
             [devcards.util.edn-renderer :refer [html-edn]]
@@ -15,7 +14,7 @@
             [cljsjs.codemirror.mode.clojure]
             [cljsjs.codemirror.addons.matchbrackets]
             [cljsjs.codemirror.addons.closebrackets]
-            [cljs.pprint :as pp :refer [pprint]]))
+            ))
 
 (defcard-doc
   "
@@ -73,8 +72,8 @@
   ## Understanding Queries
 
   Except for unions, queries are represented as vectors. Each item in the vector is a request for a data item, or
-  is a call to an abstract operation. Data items can indicate joins by nesting the given property name
-  in a map with exactly one key:
+  is a call to an abstract operation. Data items can indicate [joins](/#!/om_tutorial.Z_Glossary) by
+  nesting the given property name in a map with exactly one key:
 
   ```
   [:a :b] ; Query for properties :a and :b
@@ -94,75 +93,6 @@
   So, let's start with a very simple database and play with some queries in the card below:"
   )
 
-
-;________________________________________________
-;                                                |
-;         Execute Query                          |
-;                                                |
-;________________________________________________|
-
-
-(defn run-query [db q]
-  (try
-    (om/db->tree (r/read-string q) db db)
-    (catch js/Error e "Invalid Query")))
-
-
-;________________________________________________
-;                                                |
-;         Code Mirror                            |
-;                                                |
-;________________________________________________|
-
-(def cm-opts
-  #js {:fontSize          8
-       :lineNumbers       true
-       :matchBrackets     true
-       :autoCloseBrackets true
-       :indentWithTabs    false
-       :mode              #js {:name "clojure"}})
-
-(defn pprint-src
-  "Pretty print src for CodeMirro editor.
-  Could be included in textarea->cm"
-  [s]
-  (-> s
-      r/read-string
-      pprint
-      with-out-str))
-
-
-(defn textarea->cm
-  "Decorate a textarea with a CodeMirror editor given an id and code as string."
-  [id code]
-  (let [ta (gdom/getElement id)]
-    (js/CodeMirror
-      #(.replaceChild (.-parentNode ta) % ta)
-      (doto cm-opts
-        (gobj/set "value" code)))))
-
-(defui QueryEditor
-  Object
-  (componentDidMount [this]
-    (let [{:keys [query id]} @(om/props this)
-          src (pprint-src query)
-          cm (textarea->cm id src)]
-      (om/update-state! this assoc :cm cm)))
-  (render [this]
-    (let [props (om/props this)
-          local (om/get-state this)]
-      (dom/div nil
-               (dom/textarea #js {:id (:id @props)})
-               (dom/button #js {:onClick #(let [query (.getValue (:cm local))]
-                                           (swap! props assoc :query-result (run-query (:db @props) query)
-                                                  :query query))} "Run Query")
-               (dom/h4 nil "Database")
-               (html-edn (:db @props))
-               (dom/h4 nil "Query Result")
-               (html-edn (:query-result @props))))))
-
-(def query-editor (om/factory QueryEditor))
-
 (defcard query-example-1
          "This query starts out as one that asks for a person's name from the database. You can see our database (:db in the map below)
          has a bunch of top level properties...the entire database is just a single person.
@@ -173,7 +103,7 @@
          - The query has to be a single vector
          - The result is a map, with keys that match the selectors in the query.
          "
-         query-editor
+         qe/query-editor
          {:query        "[:person/name]"
           :query-result {}
           :db           {:db/id 1 :person/name "Sam" :person/age 23}
@@ -199,7 +129,7 @@
          - `[ [:statistics :performance] ]`
          - `[{[:statistics :performance] [:disk-activity]}]`
          "
-         query-editor
+         qe/query-editor
          {:query        "[{:table [:name {:data [:disk-activity]}]}   {:chart [:name {:data [:disk-activity :cpu-usage]}]}]"
           :query-result {}
           :db           {:table      {:name "Disk Performance Table" :data [:statistics :performance]}
@@ -351,7 +281,7 @@
           - `[{:current-panel {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]`  (access a singleton)
           - `[{[:panelA 1] {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]`  (access a singleton by ident)
          "
-         query-editor
+         qe/query-editor
          {:query        "[{:panels {:panelA [:boo] :panelB [:goo] :panelC [:sticky]}}]"
           :query-result {}
           :db           {
