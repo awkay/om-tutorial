@@ -403,6 +403,8 @@
 
   ### A Non-trivial, Recursive Example
 
+TODO: REWRITE THIS AS A WALK THROUGH CONSTRUCTING THE PARSING HELPER FUNCTIONS.
+
   Let's start with the following hand-normalized application state. Note that
   I'm not using the query grammar for object references (which take the
   form [:kw id]). Writing a more complex parser will benefit from doing
