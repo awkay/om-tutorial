@@ -1,6 +1,6 @@
 (ns core
   (:require
-    devcards.core :as dc
+    devcards.core
     om-tutorial.tutorial))
 
 (devcards.core/start-devcard-ui!)
