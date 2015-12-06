@@ -54,7 +54,7 @@
 
   In order to render components on the screen you need an element factory.
   You generate a factory with `om/factory`, which will then
-  acts like a new 'tag' for your DOM:"
+  act like a new 'tag' for your DOM:"
   (dc/mkdn-pprint-source widget)
   "Since they are plain React components you can render them in a <a href=\"https://github.com/bhauman/devcards#devcards\"
   target=\"_blank\">devcard</a>, which makes fine tuning them as pure UI dead simple:
@@ -71,7 +71,7 @@
 (defcard-doc
   "Such components are known as \"stateless components\" in Om because they do not expliticly ask for data. Later,
   when we learn about colocated queries, you'll see it is possible for a component to ask for the data it needs in
-  a declarative fasion.
+  a declarative fashion.
 
   For now, understand that you can give data to a stateless component via a simple edn map, and pull them out of
   `this` using `om/props`:"
@@ -222,7 +222,7 @@
 
   - Remember to use `#js` (shown as `clj->js` in many examples) to transform attribute maps for passing to DOM elements
   - Use *cljs* maps as input to your own Elements
-  - Extract properties with `om/props`. The is the same for stateful (with queries) or stateless components.
+  - Extract properties with `om/props`. This is the same for stateful (with queries) or stateless components.
   - Add parent-generated things (like callbacks) using `om/computed`.
 
   TODO: Add links to various docs
