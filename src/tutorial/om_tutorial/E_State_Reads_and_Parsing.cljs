@@ -13,55 +13,620 @@
   "
   # State Reads and Parsing
 
-  ## The Problem
+  First, make sure you've read the App Database section carefully, as we'll be leveraging that understanding here.
 
-  Once you have your application state in a client database you need to get that data onto the screen.
+  Next, please understand that *Om does not know how to read your data* on the client *or* the server.
+  It does provide some useful utilities (e.g. `db->tree`) for the default database format,
+  but since you can do more advanced things like parameterize joins, use alternate databases, and
+  structure things in the database in some arbitrary way you almost certainly will
+  have to participate in query result construction.
 
-  There are two interesting pieces to that puzzle:
+  Another thing to understand is that all application state changes happen through the query grammar
+  via abstract operations, and the interpretation of those operations is done via the same parsing
+  subsystem. In this case you have to define everything that happens, since it is your application
+  state you are changing.
 
-  - Getting an initial UI on the screen
-  - Asking for data from one or more servers, and having that novelty appear on the screen
-  once it is returned.
+  Finally, when talking with servers you use the exact same mechanisms (query processing) to
+  figure out what part of the UI state should come from your servers, and what operations
+  of mutation have a remote component.
+  In this case it is completely up to you to understand what you're doing with respect to
+  query processing. We'll talk about mutations and remote fetch in a later chapter.
 
-  This is complicated by the fact that Om lets you define your database format. For the
-  purposes of this tutorial, we're going to assume you're using the default database
-  format, which has the distinct advantage of solving a lot of the problems for you.
+  Simply put: you really can't write much of an Om application without getting involved
+  with interpreting the query/mutation grammar.
 
-  ## The Solution
+  So, let's get started.
 
-  In this section we're only going to address the local state. Getting data from a server
-  is in a later chapter.
+  ## Implementing Read
 
-  In the Queries section we stated the fact that the queries are composed to the root of the UI, and
-  (except for optimization cases explained later) is passed through the root to whatever child
-  needs it. Om actually does a little better than that, but you should think of it that way for
-  now.
+  When building your application you must build a read function such that it can
+  pull data from the client-side database that the parser needs to fill in the result
+  of a query parse.
 
-  So, how do you we Om to take the data out of the app state database (which you invented)
-  and give it to the UI?
+  The Om Next parser understands the grammar, and is written in such a way that the process
+  is very simple:
 
-  The answer is that Om supplies you with a query grammar *parser* that understands the syntax
-  of queries. You are required to create an instance of this parser, and plug in a state read
-  function that does the conversion from the data item being requested to a result.
+  - The parser calls your `read` with the key that it parsed, along with some other helpful information.
+  - Your read function returns a value for that key (possibly calling the parser recursively if it is a join).
+  - The parser generates the result map by putting that key/value pair into
+  the result at the correct position (relative to the query).
 
-  Fortunately, if you're using the default database format then you can get a lot of the work
-  done for you by leveraging `db->tree`, which knows how to convert non-parameterized queries
-  into a proper state tree format needed for the return value of these reads.
-
-  Before we just hand you that answer, you should understand the basics of the parser mechanism,
-  since you will end up needing to do more than the provided `db->tree` can do alone.
-
-  ## The Om Parser
-
-  The Om parser is exactly what it sounds like: a parser for the query grammar. Now, formally
-  a parser is something that takes apart input data and figures out what the parts mean (e.g.
-  that's a join, that's a mutation call, etc.). In an interpreter, each time the parser finds
-  a bit of meaning, it invokes a function to interpret that meaning and emit a result.
-  In this case, the meaning is a bit of result data; thus, for Om to be able to generate a
-  result from the parser, you must supply the \"read\" emitter.
-
-  First, let's see what an Om parser in action.
+  Note that the parser only processes the query one level deep. Recursion (if you need it)
+  is controlled by your read.
   ")
+
+(defcard parser-read-trace
+         "Here is a card that you can interact with. It has a read function that records what keys it was
+         triggered for. Give it an arbitrary legal query, and see what happens.
+
+         Some interesting queries:
+
+         - `[:a :b :c]`
+         - `[:a {:b [:x :y]} :c]`
+         - `[{:a {:b {:c [:x :y]}}}]`
+
+         "
+         (fn [state _]
+           (let [{:keys [v error]} @state
+                 trace (atom [])
+                 read-tracking (fn [env k params]
+                                 (swap! trace conj {:read-called-with-key k}))
+                 parser (om/parser {:read read-tracking})]
+             (dom/div nil
+                      (when error
+                        (dom/div nil (str error)))
+                      (dom/input #js {:type     "text"
+                                      :value    v
+                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+                      (dom/button #js {:onClick #(try
+                                                  (reset! trace [])
+                                                  (swap! state assoc :error nil)
+                                                  (parser {:state {:app-state :your-app-state-here}} (r/read-string v))
+                                                  (swap! state assoc :result @trace)
+                                                  (catch js/Error e (swap! state assoc :error e))
+                                                  )} "Run Parser")
+                      (dom/h4 nil "Parsing Trace")
+                      (html-edn (:result @state))
+                      )))
+         {}
+         {:inspect-data false})
+
+(defcard-doc
+  "
+  In the card above you should have seen that only the top-level keys trigger reads.
+
+  So, the query:
+
+  ```clj
+  [:kw {:j [:v]}]
+  ```
+
+  would result in a call to your read function on :kw and {:j [:v]}. Two calls. No
+  automatic recursion. Done. The output value of the *parser* will be a map (that
+  parse creates) which contains the keys (from the query, copied over by the
+  parser) and values (obtained from your read):
+
+  ```clj
+  { :kw value-from-read-for-kw :j value-from-read-for-j }
+  ```
+
+  Note that if your read accidentally returns a scalar for `:j` then you've not
+  done the right thing...a join like `{ :j [:k] }` expects a result that is a
+  vector of (zero or more) things *or* a singleton *map* that contains key
+  `:k`.
+
+  ```clj
+  { :kw 21 :j { :k 42 } }
+  ; OR
+  { :kw 21 :j [{ :k 42 } {:k 43}] }
+  ```
+
+  Dealing with recursive queries is a natural fit for a recusive algorithm, and it
+  is perfectly fine to invoke the `parser` function to descend the query. In fact,
+  the `parser` is passed as part of your environment.
+
+  So, the read function you write will receive three arguments, as described below:
+
+  (the indentation of this outline is rendered incorrectly. I sent a patch for devcards,
+  but it has not been released...jump into `src/tutorial/om-tutorial/E-State-Reads-and-Parsing`
+  and read the source):
+
+  1. An environment containing:
+      - `:ast`: An abstract syntax *tree* for the element, which contains:
+         - `:type`: The type of node (e.g. :prop, :join, etc.)
+         - `:dispatch-key`: The keyword portion of the triggering query element (e.g. :people/by-id)
+         - `:key`: The full key of the triggering query element (e.g. [:people/by-id 1])
+         - `:query`: (same as the query in `env`)
+         - `:children`: If this node has sub-queries, will be AST nodes for those
+         - others...see documentation
+      - `:parser`: The query parser
+      - `:state`: The application state (an atom)
+      - `:query`: **if** the element had one E.g. `{:people [:user/name]}` has `:query` `[:user/name]`
+  2. A dispatch key for the item that triggered the read (same as dispatch key in the AST)
+  3. Parameters (which are nil if not supplied in the query)
+
+  It must return a value that has the shape implied the grammar element being read.
+
+  So, lets try it out.
+  ")
+
+(defn read-42 [env key params] {:value 42})
+(def parser-42 (om/parser {:read read-42}))
+
+(defcard-doc
+  "
+  ### Reading a keyword
+
+  If the parser encounters a keyword `:kw`, your function will be called with:
+
+  ```clj
+  (your-read
+    { :state app-state :parser (fn ...) } ;; the environment. App state, parser, etc.
+    :kw                                   ;; the keyword
+    nil) ;; no parameters
+  ```
+
+  in this case, your read function should return some value that makes sense for
+  that spot in the grammar. There are no real restrictions on what that data
+  value has to be in this case. There is no further shape implied by the grammar.
+  It could be a string, number, Entity Object, JS Date, nil, etc.
+
+  Due to additional features of the parser, *your return value must be wrapped in a
+  map with the key `:value`*. If you fail to do this, you will get nothing
+  in the result.
+
+  Thus, a very simple read for props (keywords) could be:
+
+  ```clj
+  (defn read [env key params] { :value 42 })
+  ```
+
+  below is a devcard that implements exactly this read and plugs it into a
+  parser."
+  (dc/mkdn-pprint-source read-42)
+  (dc/mkdn-pprint-source parser-42)
+  "and that parser is being run against your input query."
+  )
+
+(defn parser-tester [parser]
+  (fn [state _]
+    (let [{:keys [v error]} @state]
+      (dom/div nil
+               (dom/input #js {:type     "text"
+                               :value    v
+                               :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+               (dom/button #js {:onClick #(try
+                                           (swap! state assoc :error "" :result (parser {:state (atom (:db @state))} (r/read-string v)))
+                                           (catch js/Error e (swap! state assoc :error e))
+                                           )} "Run Parser")
+               (when error
+                 (dom/div nil (str error)))
+               (dom/h4 nil "Query Result")
+               (html-edn (:result @state))
+               (dom/h4 nil "Database")
+               (html-edn (:db @state))
+               ))))
+
+(defcard property-read-for-the-meaning-of-life-the-universe-and-everything
+         "This card is using the parser/read pairing shown above (the read returns
+         the value 42 no matter what it is asked for). Run any query you
+         want in it, and check out the answer. Some examples to try:
+
+         - `[:a :b :c]`
+         - `[:what-is-6-x-7]`
+         - `[{:a {:b {:c {:d [:e]}}}}]` (yes, there is only one answer)
+         "
+         (parser-tester parser-42)
+         {:db {}}
+         )
+
+(defn property-read [{:keys [state]} key params] {:value (get @state key :not-found)})
+(def property-parser (om/parser {:read property-read}))
+
+(defcard-doc
+  "
+  So now you have a read function that returns the meaning of life the universe and
+  everything in a single line of code! But now it is obvious that we need to build
+  an even bigger machine to understand the question.
+
+  If your app state is just a flat set of scalar values with unique keyword
+  identities, then a better read is similarly trivial.
+
+  The read function:
+  "
+  (dc/mkdn-pprint-source property-read)
+  "
+  Just assumes the property will be in the top-level of the app state atom.
+  "
+  )
+
+(defcard trivial-property-reader
+         "This card is using the `property-read` function above in a parser.
+
+         The database itself is shown at the bottom of the card, after the
+         result.
+
+         Run some queries and see what you get. Some suggestions:
+
+         - `[:a :b :c]`
+         - `[:what-is-6-x-7]`
+         - `[{:a {:b {:c {:d [:e]}}}}]` (yes, there is only one answer)
+         "
+         (parser-tester property-parser)
+         {:db {:a 1 :b 2 :c 99}}
+         {:inspect-data false}
+         )
+
+(defcard-doc
+  "
+
+  The result of those nested queries is supposed to be a nested map. So, obviously we
+  have more work to do.
+
+  ### Reading a join
+
+  Your app state probably has some more structure to it than just a flat
+  bag of properties. Joins are naturally recursive in syntax, and
+  those that are accustomed to writing parsers probably already see the solution.
+
+  First, let's clarify what the read function will receive for a join. When
+  parsing:
+
+  ```clj
+  { :j [:a :b :c] }
+  ```
+
+  your read function will be called with:
+
+  ```clj
+  (your-read { :state state :parser (fn ...) :query [:a :b :c] } ; the environment
+             :j                                                 ; keyword of the join
+             nil) ; no parameters
+  ```
+
+  So, we can get a basic recursive parse using just a bit more flat data:
+
+  ```clj
+  (def app-state (atom {:a 1 :user/name \"Sam\" :c 99}))
+
+  (defn read [{:keys [state parser query] :as env} key params]
+    (if (= :user key)
+      {:value (parser env query)} ; recursive call. query is now [:user/name]
+      {:value (get @state key)})) ; gets called for :user/name :a and :c
+
+  (def my-parser (om/parser {:read read}))
+  (my-parser {:state app-state} '[:a {:user [:user/name]} :c])
+  ```
+
+  The important bit is the `then` part of the `if`. Return a value that is
+  the recursive parse of the query. Otherwise, we just look up the keyword
+  in the state (which is a very flat map).
+
+  The return value now has the correct structure of the desired response:
+
+  ```clj
+  {:a 1, :user {:user/name \"Sam\"}, :c 99}
+  ```
+
+  The first (possibly surprising thing) is that your result includes a nested
+  object, and you didn't even need to create it (the internals of the parser
+  did that).
+
+  Next you should remember that join implies a there could be one OR many results.
+  The singleton case is fine (e.g. putting a single map there). If there are
+  multiple results it should be a vector.
+
+  In this case, we're just showing that you can use the parser recursively
+  and it in turn will call your read function again.
+  In a real application, your data will not be this flat, so you
+  will almost certainly not do things in quite this
+  way.
+
+  So, let's put a little better state in our application, and write a
+  more realistic parser.
+
+  ### A Non-trivial, Recursive Example
+
+  Let's start with the following hand-normalized application state. Note that
+  I'm not using the query grammar for object references (which take the
+  form [:kw id]). Writing a more complex parser will benefit from doing
+  so, but it's our data and we can do what we want to!
+
+  ```clj
+  (def app-state (atom {
+      :window/size [1920 1200]
+      :friends #{1 3} ; these are people IDs...see map below for the objects themselves
+      :people/by-id {
+              1 { :id 1 :name \"Sally\" :age 22 :married false }
+              2 { :id 2 :name \"Joe\" :age 22 :married false }
+              3 { :id 3 :name \"Paul\" :age 22 :married true }
+              4 { :id 4 :name \"Mary\" :age 22 :married false } }
+       }))
+  ```
+
+  now we want to be able to write the following query:
+
+  ```clj
+  (def query [:window/size {:friends [:name :married]}])
+  ```
+
+  Here is where multi-methods start to come in handy. Let's use
+  one:
+
+  ```clj
+  (defmulti rread om/dispatch) ; dispatch by key
+  (defmethod rread :default [{:keys [state]} key params] nil)
+  ```
+
+  The `om/dispatch` literally means dispatch by the `key` parameter.
+  We also define a default method, so that if we fail we'll get
+  an error message in our console, but the parse will continue
+  (returning nil from a read elides that key in the result).
+
+  Now we can do the easy case: If we see something ask for window size:
+
+  ```clj
+  (defmethod rread :window/size [{:keys [state]} key params] {:value (get @state :window/size)})
+  ```
+
+  Bingo! We've got part of our parser. Try it out:
+
+  ```clj
+  (def my-parser (om/parser {:read rread}))
+  (my-parser {:state app-state} query)
+  ```
+
+  and you should see:
+
+  ```clj
+  {:window/size [1920 1200]}
+  ```
+
+  The join result (`friends`) is elided because our default `rread` got called and
+  returned `nil` (no results). OK, let's fix that:
+
+  ```clj
+  (defmethod rread :friends [{:keys [state query parser path]} key params]
+        (let [friend-ids (get @state :friends)
+              get-friend (fn [id] (get-in @state [:people/by-id id]))
+              friends (mapv get-friend friend-ids)]
+          {:value friends}
+          )
+        )
+  ```
+
+  when you run the query now, you should see:
+
+  ```clj
+  {:window/size [1920 1200],
+   :friends [{:id 1, :name \"Sally\", :age 22, :married false}
+             {:id 3, :name \"Paul\", :age 22, :married true, :married-to 2}]}
+  ```
+
+  Looks *mostly* right...but we only asked for `:name` and `:married`. Your
+  read function is responsible for the value, and we ignored the query!
+
+  This is pretty easy to remedy with the standard `select-keys` function. Change
+  the get-friend embedded function to:
+
+  ```clj
+  get-friend (fn [id] (select-keys (get-in @state [:people/by-id id]) query))
+  ```
+
+  and now you've satisfied the query:
+
+  ```clj
+  {:window/size [1920 1200],
+   :friends [{:name \"Sally\", :married false}
+             {:name \"Paul\", :married true}]}
+  ```
+
+  Those of you paying close attention will notice that we have yet to need
+  recursion. We've also done something a bit naive: select-keys assumes
+  that query contains only keys! What if our query were instead:
+
+  ```clj
+  (def query [:window/size
+              {:friends [:name :married {:married-to [:name]} ]}])
+  ```
+
+  Now things get interesting, and I'm sure more than one reader will have an
+  opinion on how to proceed. My aim is to show that the parser can be called
+  recursively to handle these things, not to find the perfect structure for the
+  parser in general, so I'm going to do something simple.
+
+  The primary trick I'm going to exploit is the fact that `env` is just a map, and
+  that we can add stuff to it. When we are in the context of a person, we'll add
+  `:person` to the environment, and pass that to `parser`. This makes parsing a query
+  like `[:name :age]` as trivial as:
+
+  ```clj
+  (defmethod rread :name [{:keys [person]} key _] {:value (get person key)})
+  (defmethod rread :age [{:keys [person]} key _] {:value (get person key)})
+  (defmethod rread :married [{:keys [person]} key _] {:value (get person key)})
+
+  (defmethod rread :friends [{:keys [state query parser path] :as env} key params]
+    (let [friend-ids (get @state :friends)
+          get-person (fn [id]
+                       (let [raw-person (get-in @state [:people/by-id id])
+                             env' (dissoc env :query) ; clear the parent query
+                             env-with-person (assoc env' :person raw-person)]
+                         (parser env-with-person query)
+                         ))
+          friends (mapv get-person friend-ids)]
+      {:value friends}
+      )
+    )
+  ```
+
+  The three important bits:
+
+  - We need to remove the :query from the environment, otherwise our nested
+    read function will get the old query on plain keywords, making it
+    impossible to tell if the parser saw `[:married-to]` vs. `{ :married-to [...] }`.
+  - For convenience, we add `:person` to the environment.
+  - The `rread` for plain scalars (like `:name`) are now trivial...just look on the
+    person in the environment!
+
+  The final piece is hopefully pretty transparent at this point.  For
+  `:married-to`, we have two possibilities: it is queried as a raw value
+  `[:married-to]` or it is joined `{ :married-to [:attrs] }`. By clearing the
+  `query` in the `:friends` `rread`, we can tell the difference (since `parser`
+  will add back a query if it parses a join).
+
+  So, our final bit of this parser could be:
+
+  ```clj
+  (defmethod rread :married-to
+    [{:keys [state person parser query] :as env} key params]
+    (let [partner-id (:married-to person)]
+      (cond
+        (and query partner-id) { :value [(select-keys (get-in @state [:people/by-id partner-id]) query)]}
+        :else {:value partner-id}
+        )))
+  ```
+
+  If further recursion is to be supported on this query, then rinse and repeat.
+
+  For those who read to the end first, here is an overall runnable segment of code
+  for this parser:
+
+  ```clj
+  (def app-state (atom {
+                        :window/size  [1920 1200]
+                        :friends      #{1 3} ; these are people IDs...see map below for the objects themselves
+                        :people/by-id {
+                                       1 {:id 1 :name \"Sally\" :age 22 :married false}
+                                       2 {:id 2 :name \"Joe\" :age 22 :married false}
+                                       3 {:id 3 :name \"Paul\" :age 22 :married true :married-to 2}
+                                       4 {:id 4 :name \"Mary\" :age 22 :married false}}
+                        }))
+
+  (def query-props [:window/size {:friends [:name :married :married-to]}])
+  (def query-joined [:window/size {:friends [:name :married {:married-to [:name]}]}])
+
+  (defmulti rread om/dispatch)
+
+  (defmethod rread :default [{:keys [state]} key params] (println \"YOU MISSED \" key) nil)
+
+  (defmethod rread :window/size [{:keys [state]} key params] {:value (get @state :window/size)})
+
+  (defmethod rread :name [{:keys [person query]} key params] {:value (get person key)})
+  (defmethod rread :age [{:keys [person query]} key params] {:value (get person key)})
+  (defmethod rread :married [{:keys [person query]} key params] {:value (get person key)})
+
+  (defmethod rread :married-to
+    ;; person is placed in env by rread :friends
+    [{:keys [state person parser query] :as env} key params]
+    (let [partner-id (:married-to person)]
+      (cond
+        (and query partner-id) {:value [(select-keys (get-in @state [:people/by-id partner-id]) query)]}
+        :else {:value partner-id}
+        )))
+
+  (defmethod rread :friends [{:keys [state query parser path] :as env} key params]
+    (let [friend-ids (get @state :friends)
+          keywords (filter keyword? query)
+          joins (filter map? query)
+          get-person (fn [id]
+                       (let [raw-person (get-in @state [:people/by-id id])
+                             env' (dissoc env :query)
+                             env-with-person (assoc env' :person raw-person)]
+                         ;; recursively call parser w/modified env
+                         (parser env-with-person query)
+                         ))
+          friends (mapv get-person friend-ids)]
+      {:value friends}
+      )
+    )
+
+  (def my-parser (om/parser {:read rread}))
+
+  ;; remember to add a require for cljs.pprint to your namespace
+  (cljs.pprint/pprint (my-parser {:state app-state} query-props))
+  (cljs.pprint/pprint (my-parser {:state app-state} query-joined))
+  ```
+
+  ## Parameters
+
+  In the query grammar most kinds of rules accept parameters. These are intended
+  to be combined with dynamic queries that will allow your UI to have some control
+  over what you want to read from the application state (think filtering, pagination,
+   and such).
+
+  Remember that Om Next has a story for integrating with server communications,
+  and these remote queries are meant to be transparent (from the UI perspective).
+  If the UI needs less data parameters and query details can fine-tune what gets
+  transferred over the wire.
+
+  As you might expect, the parameters are just passed into your read function as
+  the third argument. You are responsible for both defining and interpreting them.
+  They have no rules other than they are maps:
+
+  ```clj
+  [(:load/start-time {:locale \"es-MX\" })]                ;;prop + params
+  ```
+
+  invokes read with:
+
+  ```clj
+  (your-read env :load/start-time { :locale \"es-MX\" })
+  ```
+
+  the implication is clear. The code is up to you.
+
+
+
+
+    ## The Problem
+
+    Once you have your application state in a client-side database you need to get that data onto the screen.
+
+    There are two interesting pieces to that puzzle:
+
+    - Getting the data from the client-local database and onto the screen
+    - Asking for data from one or more servers, and having that novelty appear on the screen
+    once it is returned.
+
+    This is complicated by the fact that Om lets you define your database format. For the
+    purposes of this tutorial, we're going to assume you're using the default database
+    format, which has the distinct advantage of solving a lot of the problems for you.
+
+    ## The Solution
+
+    In this section we're only going to address the local state. Getting data from a server
+    is in a later chapter.
+
+    In the Queries section we stated the fact that the queries are composed to the root of the UI, and
+    (except for optimization cases explained later) is passed through the root to whatever child
+    needs it. Om actually does a little better than that, but you should think of it that way for
+    now.
+
+    So, how do you we Om to take the data out of the app state database (which you invented)
+    and give it to the UI?
+
+    The answer is that Om supplies you with a query grammar *parser* that understands the syntax
+    of queries. You are required to create an instance of this parser, and plug in a state read
+    function that does the conversion from the data item being requested to a result.
+
+    Fortunately, if you're using the default database format then you can get a lot of the work
+    done for you by leveraging `db->tree`, which knows how to convert non-parameterized queries
+    into a proper state tree format needed for the return value of these reads.
+
+    Before we just hand you that answer, you should understand the basics of the parser mechanism,
+    since you will end up needing to do more than the provided `db->tree` can do alone.
+
+    ## The Om Parser
+
+    The Om parser is exactly what it sounds like: a parser for the query grammar. Now, formally
+    a parser is something that takes apart input data and figures out what the parts mean (e.g.
+    that's a join, that's a mutation call, etc.). In an interpreter, each time the parser finds
+    a bit of meaning, it invokes a function to interpret that meaning and emit a result.
+    In this case, the meaning is a bit of result data; thus, for Om to be able to generate a
+    result from the parser, you must supply the \"read\" emitter.
+
+    First, let's see what an Om parser in action.
+    ")
 
 (defcard om-parser
          "This card will run an Om parser on an arbitrary query, record the calls to the read emitter,
@@ -120,7 +685,7 @@
 
 (defn read-person [env dispatch-key params]
   (case dispatch-key
-    :name {:value "Sally"} ; important...wrap real result values in a map with key :value
+    :name {:value "Sally"}                                  ; important...wrap real result values in a map with key :value
     :age {:value 23}
     :not-found
     ))
@@ -191,14 +756,14 @@
                  :people/by-id  {1 sam 2 jenny}
                  }]
   (defcard-doc "
-    ## Using `db->tree`
+      ## Using `db->tree`
 
-    Om comes with a very nice function for turning a UI query
-    into the desired data from a normalized (default-format) database. With liberal use of idents as links in the graph
-    almost all of your real state can be at the \"top\"  of the actual application state database.
+      Om comes with a very nice function for turning a UI query
+      into the desired data from a normalized (default-format) database. With liberal use of idents as links in the graph
+      almost all of your real state can be at the \"top\"  of the actual application state database.
 
-    For example, given app state (the following are live tests you can play with in the source of this file):
-    "
+      For example, given app state (the following are live tests you can play with in the source of this file):
+      "
                app-state
                )
   (deftest db-tree-tests

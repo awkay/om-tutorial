@@ -16,15 +16,12 @@
   "
   # Om Queries
 
-  ## Important Notes
+  Once you've got some data in a database on the client then the next thing you need to know
+  is how to get it back out (and eventually onto the screen). The \"getting it out\" is
+  a combination of writing queries *and* writing some of the code that actually
+  helps with the retrieval.
 
-  First, please understand that *Om does not know how to read your data* on the client *or* the server.
-  It does provide some useful utilities for the default database format described in the App
-  Database section, but since you can structure things in that format in some arbitrary way
-  you do have to participate in query result construction. Make sure you've read the App
-  Database section carefully, as we'll be leveraging that understanding here.
-
-  That said, let's understand the query syntax and semantics.
+  First, we'll tackle the queries.
 
   ## Query Syntax
 
@@ -289,3 +286,11 @@
          {:inspect-data false})
 
 
+(defcard-doc
+  "
+  In case you're interested:
+  In this section we're using the Om function `db->tree` to run the queries. This utility can
+  (obviously) understand the basic bits of query syntax and retrieve data. It is insufficient
+  for the full guts of a real application, but it is a wonderful helper that greatly simplifies
+  the task.
+  ")

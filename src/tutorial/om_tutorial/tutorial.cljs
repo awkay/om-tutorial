@@ -6,7 +6,7 @@
             [om-tutorial.C-App-Database]
             [om-tutorial.C-App-Database-Exercises]
             [om-tutorial.D-Queries]
-            [om-tutorial.D-Queries-Exercises]
+            [om-tutorial.E-UI-Queries-and-State-Exercises]
             [om-tutorial.E-State-Reads-and-Parsing]
             [om-tutorial.E-State-Reads-and-Parsing-Exercises]
             [om-tutorial.F-Mutation]

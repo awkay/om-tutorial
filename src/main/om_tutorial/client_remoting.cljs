@@ -2,7 +2,7 @@
   (:require [om-tutorial.parsing :as p]
             [om-tutorial.simulated-server :refer [simulated-server]]
             [om.next :as om]
-            [om-tutorial.om-503 :refer [process-roots]]))
+            ))
 
 (defn read-remote
   "The read function used by Om parsing to determine if a remote load should happen for given data.
@@ -20,7 +20,7 @@
 (defn send [remote-queries cb]
   (let [payload (:my-server remote-queries)
         _ (println "Payload: " payload)
-        {:keys [query rewrite]} (process-roots payload)
+        {:keys [query rewrite]} (om/process-roots payload)
         _ (println "server query: " query)
         server-response (simulated-server query)]
     (js/setTimeout (fn []

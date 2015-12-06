@@ -67,7 +67,7 @@
 
   TODO: Elide keywords from the resulting fetch query if they are in the ui.* namespace, so we don't ask the server for them
 
-  ## Re-rooting Server Queries (Pending reimplementation in this project in the om-503 namespace)
+  ## Re-rooting Server Queries
 
   In our tutorial application we have a top-level component that queries for `:widget`. The queries must compose to
   the root of the UI, but we'd really like to not have to send this client-local bit of the query over to the server,
