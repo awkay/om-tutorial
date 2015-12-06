@@ -1,20 +1,22 @@
 (ns om-tutorial.tutorial
   (:require
-            [om-tutorial.A-Introduction]
-            [om-tutorial.B-UI]
-            [om-tutorial.B-UI-Exercises]
-            [om-tutorial.C-App-Database]
-            [om-tutorial.C-App-Database-Exercises]
-            [om-tutorial.D-Queries]
-            [om-tutorial.E-UI-Queries-and-State-Exercises]
-            [om-tutorial.E-State-Reads-and-Parsing]
-            [om-tutorial.E-State-Reads-and-Parsing-Exercises]
-            [om-tutorial.F-Mutation]
-            [om-tutorial.G-Remote-Fetch]
-            [om-tutorial.H-Remote-Mutation]
-            [om-tutorial.I-Path-Optimization]
-            [om-tutorial.J-Advanced-Queries]
-            [om-tutorial.Z-Glossary]
-            ))
+    A_Introduction.cljs
+    B_UI.cljs
+    B_UI_Exercises.cljs
+    C_App_Database.cljs
+    C_App_Database_Exercises.cljs
+    D_Queries.cljs
+    E_State_Reads_and_Parsing.cljs
+    E_State_Reads_and_Parsing_Exercises.cljs
+    E_UI_Queries_and_State.cljs
+    E_UI_Queries_and_State_Exercises.cljs
+    F_Mutation.cljs
+    F_Mutation_Exercises.cljs
+    G_Remote_Fetch.cljs
+    H_Remote_Mutation.cljs
+    I_Path_Optimization.cljs
+    J_Advanced_Queries.cljs
+    Z_Glossary.cljs
+    ))
 
 
