@@ -35,8 +35,79 @@
   Simply put: you really can't write much of an Om application without getting involved
   with interpreting the query/mutation grammar.
 
-  So, let's get started.
+  So, let's get started.")
 
+(defcard-doc
+  "
+  ## The Om Parser
+
+  The Om parser is exactly what it sounds like: a parser for the query grammar. Now, formally
+  a parser is something that takes apart input data and figures out what the parts mean (e.g.
+                                                                                          that's a join, that's a mutation call, etc.). In an interpreter, each time the parser finds
+  a bit of meaning, it invokes a function to interpret that meaning and emit a result.
+  In this case, the meaning is a bit of result data; thus, for Om to be able to generate a
+  result from the parser, you must supply the \"read\" emitter.
+
+  First, let's see what an Om parser in action.
+  ")
+
+(defcard om-parser
+         "This card will run an Om parser on an arbitrary query, record the calls to the read emitter,
+    and show the trace of those calls in order. Feel free to look at the source of this card.
+
+    Essentially, it creates an Om parser:
+
+    ```
+        (om/parser {:read read-tracking})
+    ```
+
+        where the `read-tracking` simply stores details of each call in an atom and shows those calls
+    when parse is complete.
+
+    The signature of a read function is:
+
+    `(read [env dispatch-key params])`
+
+        where the env contains the state of your application, a reference to your parser (so you can
+                                                                                             call it recursively, if you wish), a query root marker, an AST node describing the exact
+    details of the element's meaning, a path, and *anything else* you want to put in there if
+    you call the parser recursively.
+
+    Try some queries like these:
+
+    - `[:a :b]`
+        - `[:a {:b [:c]}]` (note that the AST is recursively built, but only the top keys are actually parsed to trigger reads)
+    - `[(:a { :x 1 })]`  (note the value of params)
+    "
+         (fn [state _]
+           (let [{:keys [v error]} @state
+                 trace (atom [])
+                 read-tracking (fn [env k params]
+                                 (swap! trace conj {:env          (assoc env :parser :function-elided)
+                                                    :dispatch-key k
+                                                    :params       params}))
+                 parser (om/parser {:read read-tracking})]
+             (dom/div nil
+                      (when error
+                        (dom/div nil (str error)))
+                      (dom/input #js {:type     "text"
+                                      :value    v
+                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+                      (dom/button #js {:onClick #(try
+                                                  (reset! trace [])
+                                                  (swap! state assoc :error nil)
+                                                  (parser {:state {:app-state :your-app-state-here}} (r/read-string v))
+                                                  (swap! state assoc :result @trace)
+                                                  (catch js/Error e (swap! state assoc :error e))
+                                                  )} "Run Parser")
+                      (dom/h4 nil "Parsing Trace")
+                      (html-edn (:result @state))
+                      )))
+         {}
+         {:inspect-data false})
+
+(defcard-doc
+  "
   ## Implementing Read
 
   When building your application you must build a read function such that it can
@@ -56,7 +127,7 @@
   ")
 
 (defcard parser-read-trace
-         "Here is a card that you can interact with. It has a read function that records what keys it was
+         "This card is similar to the prior card, but it has a read function that just records what keys it was
          triggered for. Give it an arbitrary legal query, and see what happens.
 
          Some interesting queries:
@@ -101,7 +172,7 @@
   [:kw {:j [:v]}]
   ```
 
-  would result in a call to your read function on :kw and {:j [:v]}. Two calls. No
+  would result in a call to your read function on `:kw` and `:j`. Two calls. No
   automatic recursion. Done. The output value of the *parser* will be a map (that
   parse creates) which contains the keys (from the query, copied over by the
   parser) and values (obtained from your read):
@@ -166,9 +237,10 @@
     nil) ;; no parameters
   ```
 
-  in this case, your read function should return some value that makes sense for
+  your read function should return some value that makes sense for
   that spot in the grammar. There are no real restrictions on what that data
-  value has to be in this case. There is no further shape implied by the grammar.
+  value has to be in this case. You are reading a simple property.
+  There is no further shape implied by the grammar.
   It could be a string, number, Entity Object, JS Date, nil, etc.
 
   Due to additional features of the parser, *your return value must be wrapped in a
@@ -181,11 +253,10 @@
   (defn read [env key params] { :value 42 })
   ```
 
-  below is a devcard that implements exactly this read and plugs it into a
-  parser."
+  below is a devcard that implements exactly this `read` and plugs it into a
+  parser like this:"
   (dc/mkdn-pprint-source read-42)
   (dc/mkdn-pprint-source parser-42)
-  "and that parser is being run against your input query."
   )
 
 (defn parser-tester [parser]
@@ -210,7 +281,11 @@
 (defcard property-read-for-the-meaning-of-life-the-universe-and-everything
          "This card is using the parser/read pairing shown above (the read returns
          the value 42 no matter what it is asked for). Run any query you
-         want in it, and check out the answer. Some examples to try:
+         want in it, and check out the answer.
+
+         This card just runs `(parser-42 {:state {} } your-query)` and reports the result.
+
+         Some examples to try:
 
          - `[:a :b :c]`
          - `[:what-is-6-x-7]`
@@ -259,7 +334,6 @@
 
 (defcard-doc
   "
-
   The result of those nested queries is supposed to be a nested map. So, obviously we
   have more work to do.
 
@@ -284,7 +358,9 @@
              nil) ; no parameters
   ```
 
-  So, we can get a basic recursive parse using just a bit more flat data:
+  But just to prove a point about the separation of database format and
+  query structure we'll implement this next example
+  with a basic recursive parse, but use more flat data:
 
   ```clj
   (def app-state (atom {:a 1 :user/name \"Sam\" :c 99}))
@@ -299,18 +375,18 @@
   ```
 
   The important bit is the `then` part of the `if`. Return a value that is
-  the recursive parse of the query. Otherwise, we just look up the keyword
-  in the state (which is a very flat map).
+  the recursive parse of the sub-query. Otherwise, we just look up the keyword
+  in the state (which as you can see is a very flat map).
 
-  The return value now has the correct structure of the desired response:
+  The result of running this parser on the query shown is:
 
   ```clj
   {:a 1, :user {:user/name \"Sam\"}, :c 99}
   ```
 
   The first (possibly surprising thing) is that your result includes a nested
-  object, and you didn't even need to create it (the internals of the parser
-  did that).
+  object. The parser creates the result, and the recusion natually nested the
+  result correctly.
 
   Next you should remember that join implies a there could be one OR many results.
   The singleton case is fine (e.g. putting a single map there). If there are
@@ -574,115 +650,7 @@
   ```
 
   the implication is clear. The code is up to you.
-
-
-
-
-    ## The Problem
-
-    Once you have your application state in a client-side database you need to get that data onto the screen.
-
-    There are two interesting pieces to that puzzle:
-
-    - Getting the data from the client-local database and onto the screen
-    - Asking for data from one or more servers, and having that novelty appear on the screen
-    once it is returned.
-
-    This is complicated by the fact that Om lets you define your database format. For the
-    purposes of this tutorial, we're going to assume you're using the default database
-    format, which has the distinct advantage of solving a lot of the problems for you.
-
-    ## The Solution
-
-    In this section we're only going to address the local state. Getting data from a server
-    is in a later chapter.
-
-    In the Queries section we stated the fact that the queries are composed to the root of the UI, and
-    (except for optimization cases explained later) is passed through the root to whatever child
-    needs it. Om actually does a little better than that, but you should think of it that way for
-    now.
-
-    So, how do you we Om to take the data out of the app state database (which you invented)
-    and give it to the UI?
-
-    The answer is that Om supplies you with a query grammar *parser* that understands the syntax
-    of queries. You are required to create an instance of this parser, and plug in a state read
-    function that does the conversion from the data item being requested to a result.
-
-    Fortunately, if you're using the default database format then you can get a lot of the work
-    done for you by leveraging `db->tree`, which knows how to convert non-parameterized queries
-    into a proper state tree format needed for the return value of these reads.
-
-    Before we just hand you that answer, you should understand the basics of the parser mechanism,
-    since you will end up needing to do more than the provided `db->tree` can do alone.
-
-    ## The Om Parser
-
-    The Om parser is exactly what it sounds like: a parser for the query grammar. Now, formally
-    a parser is something that takes apart input data and figures out what the parts mean (e.g.
-    that's a join, that's a mutation call, etc.). In an interpreter, each time the parser finds
-    a bit of meaning, it invokes a function to interpret that meaning and emit a result.
-    In this case, the meaning is a bit of result data; thus, for Om to be able to generate a
-    result from the parser, you must supply the \"read\" emitter.
-
-    First, let's see what an Om parser in action.
-    ")
-
-(defcard om-parser
-         "This card will run an Om parser on an arbitrary query, record the calls to the read emitter,
-         and show the trace of those calls in order. Feel free to look at the source of this card.
-
-         Essentially, it creates an Om parser:
-
-         ```
-         (om/parser {:read read-tracking})
-         ```
-
-         where the `read-tracking` simply stores details of each call in an atom and shows those calls
-         when parse is complete.
-
-         The signature of a read function is:
-
-         `(read [env dispatch-key params])`
-
-         where the env contains the state of your application, a reference to your parser (so you can
-         call it recursively, if you wish), a query root marker, an AST node describing the exact
-         details of the element's meaning, a path, and *anything else* you want to put in there if
-         you call the parser recursively.
-
-         Try some queries like these:
-
-         - `[:a :b]`
-         - `[:a {:b [:c]}]` (note that the AST is recursively built, but only the top keys are actually parsed to trigger reads)
-         - `[(:a { :x 1 })]`  (note the value of params)
-         "
-         (fn [state _]
-           (let [{:keys [v error]} @state
-                 trace (atom [])
-                 read-tracking (fn [env k params]
-                                 (swap! trace conj {:env          (assoc env :parser :function-elided)
-                                                    :dispatch-key k
-                                                    :params       params}))
-                 parser (om/parser {:read read-tracking})]
-             (dom/div nil
-                      (when error
-                        (dom/div nil (str error)))
-                      (dom/input #js {:type     "text"
-                                      :value    v
-                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
-                      (dom/button #js {:onClick #(try
-                                                  (reset! trace [])
-                                                  (swap! state assoc :error nil)
-                                                  (parser {:state {:app-state :your-app-state-here}} (r/read-string v))
-                                                  (swap! state assoc :result @trace)
-                                                  (catch js/Error e (swap! state assoc :error e))
-                                                  )} "Run Parser")
-                      (dom/h4 nil "Parsing Trace")
-                      (html-edn (:result @state))
-                      )))
-         {}
-         {:inspect-data false})
-
+  ")
 (defn read-person [env dispatch-key params]
   (case dispatch-key
     :name {:value "Sally"}                                  ; important...wrap real result values in a map with key :value
