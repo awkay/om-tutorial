@@ -8,3 +8,4 @@ target
 resources/public/tutorial
 checkouts
 .nrepl-port
+resources/public/pages
