@@ -61,21 +61,23 @@
                                                        :requires ["cljsjs.codemirror"]
                                                        :file     "resources/public/codemirror/matchbrackets-min.js"}]}}
                {:id           "pages"
-                :source-paths ["src/main" "src/tutorial"]
+                :source-paths ["src/main" "src/tutorial" "src/prod"]
                 :compiler     {
-                               :main           om-tutorial.tutorial
-                               :asset-path     "pages"
-                               :output-to      "resources/public/pages/tutorial.js"
-                               :output-dir     "resources/public/pages"
-                               :parallel-build false
-                               :verbose        false
-                               :optimizations  :advanced
-                               :foreign-libs   [{:provides ["cljsjs.codemirror.addons.closebrackets"]
-                                                 :requires ["cljsjs.codemirror"]
-                                                 :file     "resources/public/codemirror/closebrackets-min.js"}
-                                                {:provides ["cljsjs.codemirror.addons.matchbrackets"]
-                                                 :requires ["cljsjs.codemirror"]
-                                                 :file     "resources/public/codemirror/matchbrackets-min.js"}]}}]}
+                               :main                 core
+                               :devcards             true
+                               :source-map           "resources/public/pages/tutorial.js.map"
+                               :asset-path           "pages"
+                               :output-to            "resources/public/pages/tutorial.js"
+                               :output-dir           "resources/public/pages"
+                               :parallel-build       false
+                               :verbose              true
+                               :optimizations        :whitespace
+                               :foreign-libs         [{:provides ["cljsjs.codemirror.addons.closebrackets"]
+                                                       :requires ["cljsjs.codemirror"]
+                                                       :file     "resources/public/codemirror/closebrackets-min.js"}
+                                                      {:provides ["cljsjs.codemirror.addons.matchbrackets"]
+                                                       :requires ["cljsjs.codemirror"]
+                                                       :file     "resources/public/codemirror/matchbrackets-min.js"}]}}]}
 
   :profiles {
              :dev {:source-paths ["src/dev"]
