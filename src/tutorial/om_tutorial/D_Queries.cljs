@@ -10,10 +10,6 @@
             [om-tutorial.queries.query-demo :as qd]
             [devcards.util.edn-renderer :refer [html-edn]]
             [devcards.core :as dc :refer-macros [defcard defcard-doc]]
-            [cljsjs.codemirror]
-            [cljsjs.codemirror.mode.clojure]
-            [cljsjs.codemirror.addons.matchbrackets]
-            [cljsjs.codemirror.addons.closebrackets]
             ))
 
 (defcard-doc
@@ -69,60 +65,95 @@
     symbol *within* a syntax quoted form. This prevents a namespace from being added (unquote a form
     that literally quotes the symbol).
 
-  ## Understanding Queries
+  ## Understanding Queries - Properties
 
-  Except for unions, queries are represented as vectors. Each item in the vector is a request for a data item, or
-  is a call to an abstract operation. Data items can indicate [joins](/#!/om_tutorial.Z_Glossary) by
-  nesting the given property name in a map with exactly one key:
+  Except for unions, queries are represented as vectors.
+
+  To read simple properties, just include the keyword name of that property in a vector.
 
   ```
   [:a :b] ; Query for properties :a and :b
-  [:a {:b [:c]}] ; Query for property :a, and then follow property :b to an object (map) and include property :c from it
   ```
 
-  The join key indicates that a keyword of that name exists on the data being queried,
-  and the value is either a map (for a to-one relation) or a vector (to-many).
-
-  The result for the above queries would be maps, keyed by the query selectors:
-
-  ```
-  {:a 1 :b 2} ; possible result for the first
-  {:a 1 :b { :c 3} } ; possible result for the second
-  ```
-
-  So, let's start with a very simple database and play with some queries in the card below:"
-  )
+  When you run a query, you are supposed to get back a map keyed by the query keywords, with values
+  that represent that data. The values are unconstrained by a schema. They could be string, numbers,
+  objects, maps, etc.
+  ")
 
 (defcard query-example-1
-         "This query starts out as one that asks for a person's name from the database. You can see our database (:db in the map below)
-         has a bunch of top level properties...the entire database is just a single person.
-         Play with the query. Ask for this person's age and database ID.
+         "
+         This query card has a database that contains exactly one thing: the details about a person.
+
+         Play with the query and ask for this person's age and database ID.
 
          Notes:
 
-         - The query has to be a single vector
+         - The query has to be a vector
          - The result is a map, with keys that match the selectors in the query.
          "
          qe/query-editor
          {:query        "[:person/name]"
           :query-result {}
-          :db           {:db/id 1 :person/name "Sam" :person/age 23}
+          :db           {:db/id 1 :person/name "Sam" :person/age 23 :person/favorite-date (js/Date.)}
           :id           "query-example-1"}
          {:inspect-data false})
 
+
 (defcard-doc
   "
-  A more interesting database has some tables in it, like we saw in the App Database section. Let's play with
-  queries on one of those.")
+  ## Joins
+
+  Queries can indicate [joins](/#!/om_tutorial.Z_Glossary) by
+  nesting a *property name* (a keyword) in a map with *exactly one* key, whose value
+  is a subquery for what you want to pull out of that (or those) database items.
+
+  For example to pull a chart that might contains a sequence of (x,y,color) triples,
+  you might write:
+
+  ```
+  [ {:chart [:x :y :color]} ]
+  ```
+
+  The join key indicates that a keyword of that name exists on the data being queried,
+  and the value in the database at that keyword is either a map (for a to-one relation)
+  or a vector (to-many).
+
+  The result for queries are always maps, keyed by the query selectors. In this case
+  let's pretend like there is a single chart, which has multiple data points. The
+  result of the query would be:
+
+  ```
+  { :chart [ {:x 1 :y 2 :color \"red\"} {:x 4 :y 3 :color \"red\"} ... ]}
+  ```
+
+  If the join were something like this:
+
+  ```
+  [ {:modal-dialog [:message]} ]
+  ```
+
+  one might expect that this is a *to one* join (and the corresponding database would have
+  single item at that location), resulting in:
+
+  ```
+  { :modal-dialog {:message \"You screwed up!. Click OK to continue.\" } }
+  ```
+
+  ")
 
 (defcard query-example-2
-         "This database (in :db below) has some performance statistics linked into a table and chart. Note that
-         the query for the table is for the disk data, while the chart is combining multiple bits of data. Play with the query a bit
-         to make sure you understand it (e.g. erase it and try to write it from scratch).
+         "
+         This query card has a more interesting database in it with some performance statistics
+         linked into a table and chart. Note that
+         the supplied query for the table is for the disk data, while the query for the
+         chart combines multiple bits of data.
 
-         Again note that the query result is a map in tree form. A tree is exactly what you need for a UI!
+         Play with the query a bit to make sure you understand it (e.g. erase it and try to write it from scratch).
 
-         Some interesting queries to try:
+         Again note that the query result is a map in tree form, and remember that
+         a tree is exactly what you need for a UI!
+
+         Some other interesting queries to try:
 
          - `[:table]`
          - `[{:chart [{:data [:cpu-usage]}]}]`
@@ -143,118 +174,35 @@
 
 (defcard-doc "
 
-  A large percentage of your queries will fall into the property or join variety, so we'll leave the
-  rest of the grammar for now, and move on to how these queries work with the UI.
-
-  ## Co-located Queries on Components
-
-  OK, now things start to get really cool, because now that you understand the basic UI, queries, and the app
-  database format, we're ready to combine them. After all, our goal is to make a webapp isn't it?
-
-  ### The Problem
-
-  So, we've seen great ways to lay out our data into these nice graph databases, and we've seen how
-  to query them. Two questions remain:
-
-  1. What's the easiest way to get my data into one of these databases?
-  2. How does this relate to my overall UI?
-
-  ### The Solution
-
-  These two questions are tightly related. David Nolen had this wonderful realization that when
-  rendering the tree of your UI you are doing the same thing as when you're evaluating a graph
-  query.
-
-  Both the *UI render* and *running the query* are \"walks\" of a graph of data. Furthermore,
-  if the UI tree participates in defining which bits of the query have distinct identity,
-  then you can use *that* information to walk both (a sample tree and the current UI query) at
-  the same time and take the process in reverse (from a *sample* UI tree into the desired graph
-  database format)!
-
-  ## Details
-
-  So, let's see how that works.
-
-  Placing a query on a component declares what data that component needs in order to render correctly.
-  Components are little fragments of UI, so the queries on them are little fragments of the query.
-  Thus, a `Person` component might declare it needs a person's name:
-
-  "
-             (dc/mkdn-pprint-source qd/Person)
-             "
-
-             but you have yet to answer \"which one\" by placing it somewhere in a join.
-
-             Examples might be:
-
-             Get people that are my friends (e.g. relative to your login cookie):
-
-             ```
-             [{:current-user/friends (om/get-query Person)}]
-             ```
-
-             Get people that work for the company (context of login):
-
-             ```
-             [{:company/active-employees (om/get-query Person)}]
-             ```
-
-             Get a very specific user (using an ident):
-
-             ```
-             [{[:user/by-id 42] (om/get-query Person)}]
-             ```
-
-             The `query-demo.cljs` contains components:
-
-             "
-             (dc/mkdn-pprint-source qd/Person)
-             (dc/mkdn-pprint-source qd/person)
-             (dc/mkdn-pprint-source qd/PeopleWidget)
-             (dc/mkdn-pprint-source qd/people-list)
-             (dc/mkdn-pprint-source qd/Root)
-             "
-
-             The above component make the following UI tree:
-
-             TODO: UI Tree diagram
-
-             and the queries form the following query tree:
-
-             TODO: Query diagram
-
-             because the middle component (PeopleWidget) does not have a query. Pay careful attention to how the queries are
-             composed (among stateful components). It is perfectly fine for a UI component to not participate in the query,
-             in which case you must remember that the walk of render will not match the walk of the result data. This
-             is shown in the above code: note how the root element asks for `:people`, and the render of the root
-             pulls out that data and passes it down. Then note how `PeopleWidget` pulls out the entire properties
-             and passes them on to the component that asked for those details. In fact, you can change `PeopleWidget`
-             into a simple function. There is no specific need for it to be a component, as it is really just doing
-             what the root element needed to do: pass the items from the list of people it queried into the
-             final UI children (`Person`) that asked for the details found in each of the items. The middle widget isn't
-             participating in the state tree generation, it is merely an artifact of rendering.
-
-             So, this example will render correctly when the query result looks like what you see in the card below:
-           ")
-
-(defcard sample-rendering-with-result-data
-         (fn [state _] (qd/root @state))
-         {:people [{:db/id 1 :person/name "Joe"}
-                   {:db/id 2 :person/name "Guy"}
-                   {:db/id 3 :person/name "Tammy"}
-                   ]}
-         {:inspect-data true}
-         )
-
-(defcard-doc "
-
   ## More Advanced Queries
 
-  ### Parameters
+  ### Parameters in the Query
 
-  All of the query elements can be parameterized. These parameters are passed down to the query engine (which you help
-  write), and can be used however you choose. Om does not give any meaning whatsoever to these parameters. See
-  the section on [State Reads and Parsing](#!/om_tutorial.E_State_Reads_and_Parsing) for more information.
+  All of the query elements can be parameterized (this is distictly different than the feature provided
+  by `IQueryParams`, which is a UI feature for dynamically modifying queries at runtime). All of the
+  parameter forms are surrounded by parens, and contain an additional map of k/v pairs that stand
+  for the parameters.
+
+  For example, you could (abstractly) parameterize a join like so (note we need to quote it now, since
+  we're using list notation, and don't want the compiler to try calling the query element as a function):
+
+  ```
+        vvvvv the join keyword
+  '[({:friends [:person/name :person/age]}  { :limit 10 :order :by-name })]
+  ; ^ note paren        ^^^^ The join selector      ^^^^^^^^ parameters  ^ note paren
+  ```
+
+  It is *very important to realize* that the parameters in the query above we're pulled directly
+  out of the author's hindquarters. Om knows nothing about them, other than they are legal
+  parts of the query grammar. If you want to give them meaning then you'll have to add code that
+  does so.
+
+  You see, the parameters you include in the query are passed down to the query engine (which you help
+  write), and can be used however you choose. The built-in helper function for queries (which we're using
+  in our query cards) can do basic data reads, but it isn't smart enough to do anything else.
+
+  See the section on [State Reads and Parsing](#!/om_tutorial.E_State_Reads_and_Parsing) for more information
+  on writing and interpreting queries that contain parameters.
 
   ### Looking up by Ident
 
@@ -263,17 +211,63 @@
   and can be used in place of a property name to indicate a specific instance
   of some object in the database (as property access or a join). This provides explicit context from
   which the remainder of the query can be evaluated.
+  ")
 
+(defcard ident-based-queries
+         "The database in this card contains various tables. Use idents in queries to experiement with this
+         query feature. Note that even though you are querying by ident (which is a vector) you *still need*
+         the containing vector (which is the top-level container for queries).
+
+          NOTE: The edn renderer sometimes misformats idents by vertically moving the closing bracket down a line.
+          The *query result* of the suggested queries is keyed by the ident:
+
+          ```
+          { [:people/by-id 2] ... }
+          ```
+
+          Some interesting queries to try:
+
+          - `[ [:people/by-id 2] ]`
+          - `[{[:people/by-id 1] [:person/age]} {[:people/by-id 3] [:person/name]}]`
+         "
+         qe/query-editor
+         {:query        "[ ]"
+          :query-result {}
+          :db           {
+                         :people/by-id {1 {:person/name "Sally" :person/age 33}
+                                        2 {:person/name "Jesse" :person/age 43}
+                                        3 {:person/name "Bo" :person/age 13}}
+                         }
+          :id           "ident-based-queries"}
+         {:inspect-data false})
+
+
+(defcard-doc
+  "
   ### Union Queries
 
   When a component is showing a sequence of things and each of those things might be different, then you need
   a union query. Basically, it is a *join*, but it names all of the alternative things that might appear
   in the resulting collection. Instead of being a vector, unions are maps of vectors (where each value in the map
   is the query for the keyed kind of thing). They look like multiple joins all merged into a single map.
+
+  The ident (in the query, or in the database) for the item in question is used to determine the *type* of thing
+  at that location with the following convention: The keyword (first) element of the ident indicates the *type*,
+  and the union query itself is *keyed* by that type. Thus the ident keyword serves as the resolver for the
+  actual selector query to use against the real item in the database.
+
+  The following query card with data can be used to reinforce your understanding.
   ")
 
 (defcard union-queries
-         "This database (in :db below)
+         "The database in this card contains some pretend UI panels of different types (and assumes you could
+         have more than one of each). There is a panel of \"type\" `:panelA`, whose ID is 1. The same for B and
+         C. The `:current-panel` bit of state is a singleton ident that is meant to stand for the panel I
+         want to, say, show on the screen. The `:panels` bit of state is a list of panels.
+
+         Remember that a map with multiple k-v pairs is a union query, and you should think of it as \"this
+         the a map of sub-query selectors to apply to the object you find in the database, and you pick
+         one via the keyword of the ident of that object\".
 
           Some interesting queries to try:
 
@@ -285,59 +279,13 @@
          {:query        "[{:panels {:panelA [:boo] :panelB [:goo] :panelC [:sticky]}}]"
           :query-result {}
           :db           {
-                         :panels [[:panelA 1] [:panelB 1][:panelC 1]]
-                         :panelA { 1 {:boo 42}}
-                         :panelB { 1 {:goo 8}}
-                         :panelC { 1 {:sticky true}}
+                         :panels        [[:panelA 1] [:panelB 1] [:panelC 1]]
+                         :panelA        {1 {:boo 42}}
+                         :panelB        {1 {:goo 8}}
+                         :panelC        {1 {:sticky true}}
                          :current-panel [:panelA 1]
                          }
           :id           "union-queries"}
          {:inspect-data false})
 
-(defcard-doc "
-  ## Common Mistakes
-
-  ### Failing to Reach the UI Root
-
-  Om only looks for the query on the root component of your UI! Make sure your queries compose all the way to
-  the root! Basically the Root component ends up with one big fat query for the whole UI, but you get to
-  *reason* about it through composition (recursive use of `get-query`). Also note that all of the data
-  gets passed into the Root component, and every level of the UI that asked for (or composed in) data
-  must pick that apart and pass it down. In other words, you can pretend like you UI doesn't even have
-  queries when working on your render functions. E.g. you can build your UI, pick apart a pretend
-  result, then later add queries and everything should work.
-
-  ### Declaring a query that is not your own
-
-  Beginners often make the mistake:
-
-  ```
-  (defui Widget
-       static om/IQuery
-       (query [this] (om/get-query OtherWidget))
-       ...)
-  ```
-
-  because they think \"this component just needs what the child needs\". If that is truly the case, then
-  Widget should not have a query at all (the parent should compose OtherWidget's into it's own query). The most common
-  location where this happens is at the root, where you may not want any specific data yourself.
-
-  In that case, you *do* need a stateful component at the root, but you'll need to get the child data
-  using a join, and then pick it apart via code and manually pass those props down:
-
-  ```
-  (defui RootWidget
-       static om/IQuery
-       (query [this] [{:other (om/get-query OtherWidget)}])
-       Object
-       (render [this]
-          (let [{:keys [other]} (om/props this)] (other-element other)))
-  ```
-
-  ### Making a component when a function would do
-
-  Sometimes you're just trying to clean up code and factor bits out. Don't feel like you have to wrap UI code in
-  `defui` if it doesn't need any support from React or Om. Just write a function! `PeopleWidget` earlier in this
-  document is a great example of this.
-  ")
 

@@ -5,6 +5,10 @@
             [goog.dom :as gdom]
             [goog.object :as gobj]
             [cljs.pprint :as pp :refer [pprint]]
+            [cljsjs.codemirror]
+            [cljsjs.codemirror.mode.clojure]
+            [cljsjs.codemirror.addons.matchbrackets]
+            [cljsjs.codemirror.addons.closebrackets]
             [om.dom :as dom]))
 
 (defn run-query [db q]
