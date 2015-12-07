@@ -759,16 +759,7 @@ TODO: REWRITE THIS AS A WALK THROUGH CONSTRUCTING THE PARSING HELPER FUNCTIONS.
            "
            (is (= {[:people/by-id 1] {:person/name "Sam", :person/mate {:person/name "Jenny"}}}
                   (om/db->tree '[{[:people/by-id 1] [:person/name {:person/mate [:person/name]}]}] app-state app-state)))
-           "- And you can even have a query-prefix of UI-related keys that are not even in the app-state database!
 
-
-           ```
-           (om/db->tree '[{:root-ui [{:widget [{[:people/by-id 1] [:db/id :person/name]}]}]}] app-state app-state) => {:root-ui {:widget {[:people/by-id 1] {:db/id 1, :person/name \"Sam\"}}}}
-           ```
-           "
-
-           (is (= {:root-ui {:widget {[:people/by-id 1] {:db/id 1, :person/name "Sam"}}}}
-                  (om/db->tree '[{:root-ui [{:widget [{[:people/by-id 1] [:db/id :person/name]}]}]}] app-state app-state)))
            ))
 
 (defcard-doc
