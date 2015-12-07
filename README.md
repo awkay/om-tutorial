@@ -44,7 +44,7 @@ beginners. Bonus points if anyone wants to hack the cljs ecosystem so that code 
 
 ## Figwheel notes
 
-I'm starting three builds at the same time in `start-dev`. Once the fighweel REPL is going, you can 
+I'm starting three builds at the same time in `start-dev`. Once the figwheel REPL is going, you can 
 clean and rebuild with 
 
 ```
