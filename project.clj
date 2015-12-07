@@ -10,6 +10,8 @@
 
   :source-paths ["src/main" "src/cards" "src/tutorial"]
 
+  :plugins [[lein-cljsbuild "1.1.1"]]
+
   :clean-targets ^{:protect false} ["resources/public/js" "resources/public/cards" "resources/public/tutorial" "target"]
 
   :figwheel {:build-ids   ["dev" "cards" "tutorial"]
@@ -52,12 +54,29 @@
                                :parallel-build       true
                                :recompile-dependents true
                                :verbose              false
-                               :foreign-libs [{:provides ["cljsjs.codemirror.addons.closebrackets"]
-                                               :requires ["cljsjs.codemirror"]
-                                               :file     "resources/public/codemirror/closebrackets-min.js"}
-                                              {:provides ["cljsjs.codemirror.addons.matchbrackets"]
-                                               :requires ["cljsjs.codemirror"]
-                                               :file     "resources/public/codemirror/matchbrackets-min.js"}]}}]}
+                               :foreign-libs         [{:provides ["cljsjs.codemirror.addons.closebrackets"]
+                                                       :requires ["cljsjs.codemirror"]
+                                                       :file     "resources/public/codemirror/closebrackets-min.js"}
+                                                      {:provides ["cljsjs.codemirror.addons.matchbrackets"]
+                                                       :requires ["cljsjs.codemirror"]
+                                                       :file     "resources/public/codemirror/matchbrackets-min.js"}]}}
+               {:id           "pages"
+                :source-paths ["src/main" "src/tutorial" "src/prod"]
+                :compiler     {
+                               :main                 core
+                               :devcards             true
+                               :asset-path           "pages"
+                               :output-to            "resources/public/pages/tutorial.js"
+                               :output-dir           "resources/public/pages"
+                               :parallel-build       false
+                               :verbose              true
+                               :optimizations        :advanced
+                               :foreign-libs         [{:provides ["cljsjs.codemirror.addons.closebrackets"]
+                                                       :requires ["cljsjs.codemirror"]
+                                                       :file     "resources/public/codemirror/closebrackets-min.js"}
+                                                      {:provides ["cljsjs.codemirror.addons.matchbrackets"]
+                                                       :requires ["cljsjs.codemirror"]
+                                                       :file     "resources/public/codemirror/matchbrackets-min.js"}]}}]}
 
   :profiles {
              :dev {:source-paths ["src/dev"]

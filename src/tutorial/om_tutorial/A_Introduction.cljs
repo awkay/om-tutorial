@@ -21,6 +21,8 @@
 
   There are others, but this is sufficient for a starting point.
 
+  Note that you can navigate to the table of contents any time using the `devcards` link at the top of the page.
+
   ## About This Tutorial
 
   This tutorial is written in Bruce Hauman's excellent Devcards. As such, these documents are live code!
