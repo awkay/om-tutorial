@@ -76,7 +76,7 @@
     Try some queries like these:
 
     - `[:a :b]`
-        - `[:a {:b [:c]}]` (note that the AST is recursively built, but only the top keys are actually parsed to trigger reads)
+    - `[:a {:b [:c]}]` (note that the AST is recursively built, but only the top keys are actually parsed to trigger reads)
     - `[(:a { :x 1 })]`  (note the value of params)
     "
          (fn [state _]
@@ -198,21 +198,17 @@
 
   So, the read function you write will receive three arguments, as described below:
 
-  (the indentation of this outline is rendered incorrectly. I sent a patch for devcards,
-  but it has not been released...jump into `src/tutorial/om-tutorial/E-State-Reads-and-Parsing`
-  and read the source):
-
   1. An environment containing:
-      - `:ast`: An abstract syntax *tree* for the element, which contains:
-         - `:type`: The type of node (e.g. :prop, :join, etc.)
-         - `:dispatch-key`: The keyword portion of the triggering query element (e.g. :people/by-id)
-         - `:key`: The full key of the triggering query element (e.g. [:people/by-id 1])
-         - `:query`: (same as the query in `env`)
-         - `:children`: If this node has sub-queries, will be AST nodes for those
-         - others...see documentation
-      - `:parser`: The query parser
-      - `:state`: The application state (an atom)
-      - `:query`: **if** the element had one E.g. `{:people [:user/name]}` has `:query` `[:user/name]`
+      + `:ast`: An abstract syntax *tree* for the element, which contains:
+         + `:type`: The type of node (e.g. :prop, :join, etc.)
+         + `:dispatch-key`: The keyword portion of the triggering query element (e.g. :people/by-id)
+         + `:key`: The full key of the triggering query element (e.g. [:people/by-id 1])
+         + `:query`: (same as the query in `env`)
+         + `:children`: If this node has sub-queries, will be AST nodes for those
+         + others...see documentation
+      + `:parser`: The query parser
+      + `:state`: The application state (an atom)
+      + `:query`: **if** the element had one E.g. `{:people [:user/name]}` has `:query` `[:user/name]`
   2. A dispatch key for the item that triggered the read (same as dispatch key in the AST)
   3. Parameters (which are nil if not supplied in the query)
 
