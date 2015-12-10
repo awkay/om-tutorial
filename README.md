@@ -25,7 +25,7 @@ or at the command line with:
 lein run -m clojure.main script/figwheel.clj
 ```
 
-Then browse to the following URL in separate tabs:
+Then browse to the following URL:
 
 ```
 http://localhost:3450   Devcards-based Tutorial (start here)
@@ -44,8 +44,7 @@ beginners. Bonus points if anyone wants to hack the cljs ecosystem so that code 
 
 ## Figwheel notes
 
-I'm starting three builds at the same time in `start-dev`. Once the figwheel REPL is going, you can 
-clean and rebuild with 
+Once the figwheel REPL is going, you can clean and rebuild with 
 
 ```
 (reset-autobuild)
