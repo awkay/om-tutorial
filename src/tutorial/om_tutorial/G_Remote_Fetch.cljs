@@ -65,8 +65,6 @@
   The `:make-root` flag (which can be boolean or any other keyword, but only has an effect if it is `:make-root` or `true`)
   is used to set up root processing. I'll cover that more later.
 
-  TODO: Elide keywords from the resulting fetch query if they are in the ui.* namespace, so we don't ask the server for them
-
   ## Re-rooting Server Queries
 
   In our tutorial application we have a top-level component that queries for `:widget`. The queries must compose to
