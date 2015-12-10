@@ -17,7 +17,7 @@
   "
   # Remote Fetch
 
-  TODO: The notes below are a mismash of thoghts...they are more notes to myself as placeholders for what to develop here...
+  TODO: The notes below are a mismash of thoughts...they are more notes to myself as placeholders for what to develop here...
 
   ### Remote Fetch
 
@@ -110,6 +110,9 @@
           restructured-response (rewrite server-response)]
           (callback restructured-response)))
   ```
+
+  NOTE: As of alpha26 `process-roots` only handles joins as new roots. It will not follow the branches of a union
+  nor can it re-root a plain property.
   ")
 
 (defcard-doc "
