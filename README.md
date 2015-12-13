@@ -6,6 +6,10 @@ simplicity, the server-side component is simulated in the browser.
 The code you would write on the server is identical (though you 
 will need some minor plumbing to do the actual network bits).
 
+I try to keep it running at https://awkay.github.io/om-tutorial/, 
+though it is really meant to be cloned locally, as the 
+exercises have you edit the code.
+
 ## What's inside?
 
 The organization is in flux. The top-level `src` directory contains:
