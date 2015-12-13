@@ -14,18 +14,18 @@
 
 (defcard-doc
   "
-  A large percentage of your queries will fall into the property or join variety, so we'll leave the
-  rest of the grammar for now, and move on to how these queries work with the UI.
+  # UI, Queries, and State
+
+  Now that you understand the database format, how you get data out of that database via
+  the queries, and how you build parser code you're ready to get some UI on the screen
+  via all of those things.
 
   ## Co-located Queries on Components
-
-  OK, now things start to get really cool, because now that you understand the basic UI, queries, and the app
-  database format, we're ready to combine them. After all, our goal is to make a webapp isn't it?
 
   ### The Problem
 
   So, we've seen great ways to lay out our data into these nice graph databases, and we've seen how
-  to query them. Two questions remain:
+  to query them and even build retrieval code. Two questions remain:
 
   1. What's the easiest way to get my data into one of these databases?
   2. How does this relate to my overall UI?
@@ -52,20 +52,25 @@
 
   "
   (dc/mkdn-pprint-source qd/Person)
+  (dc/mkdn-pprint-source qd/person)
   "
 
   It is *really* important for you to understand that what you learned in the section on UI is not
   changed by adding the query. You can still use this component by just passing it data (e.g. the
   map from the first query simulation). Look at the source for the following card to convince you
   this is true:
-  ```
-  (defcard using-component-with-query-passing-raw-data
-           (qd/person {:person/name \"Sam\"})
-           )
-  ```
   ")
 
 (defcard using-component-with-query-passing-raw-data
+         "
+         This card is simply rendering:
+
+         ```
+           (qd/person {:person/name \"Sam\"})
+         ```
+
+         from the definitions above.
+         "
          (qd/person {:person/name "Sam"})
          )
 
@@ -98,7 +103,7 @@
   [{[:user/by-id 42] (om/get-query Person)}]
   ```
 
-  The `query-demo.cljs` contains these components:
+  `om-tutorial.queries.query-demo` contains these components:
 
   "
   (dc/mkdn-pprint-source qd/Person)
@@ -142,9 +147,6 @@
          )
 
 (defcard-doc "
-  # UI, Queries, and State
-
-  We're finally ready to start building an application with Om.
 
   ## Common Mistakes
 

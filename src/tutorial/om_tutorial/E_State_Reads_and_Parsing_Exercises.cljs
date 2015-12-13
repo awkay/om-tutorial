@@ -9,8 +9,6 @@
             [cljs.reader :as r]
             [om.next.impl.parser :as p]))
 
-
-
 (defcard-doc
   "# State and Parsing Exercises
 

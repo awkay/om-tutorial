@@ -2,10 +2,10 @@
   :description "A Tutorial for Om 1.0.0 (next)"
   :dependencies [[org.clojure/clojure "1.7.0" :scope "provided"]
                  [org.clojure/clojurescript "1.7.170" :scope "provided"]
-                 [devcards "0.2.1" :exclusions [org.omcljs/om]]
+                 [devcards "0.2.1-2" :exclusions [org.omcljs/om cljsjs/react-dom org.clojure/tools.reader cljsjs/react]]
                  [datascript "0.13.3"]
-                 [org.omcljs/om "1.0.0-alpha25"]
-                 [figwheel-sidecar "0.5.0-2" :scope "test"]
+                 [org.omcljs/om "1.0.0-alpha26"]
+                 [figwheel-sidecar "0.5.0-2" :exclusions [clj-time joda-time org.clojure/tools.reader] :scope "test"]
                  [cljsjs/codemirror "5.8.0-0"]]
 
   :source-paths ["src/main" "src/cards" "src/tutorial"]

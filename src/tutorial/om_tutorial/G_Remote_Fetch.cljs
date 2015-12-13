@@ -17,7 +17,7 @@
   "
   # Remote Fetch
 
-  TODO: The notes below are a mismash of thoghts...they are more notes to myself as placeholders for what to develop here...
+  TODO: The notes below are a mismash of thoughts...they are more notes to myself as placeholders for what to develop here...
 
   ### Remote Fetch
 
@@ -65,8 +65,6 @@
   The `:make-root` flag (which can be boolean or any other keyword, but only has an effect if it is `:make-root` or `true`)
   is used to set up root processing. I'll cover that more later.
 
-  TODO: Elide keywords from the resulting fetch query if they are in the ui.* namespace, so we don't ask the server for them
-
   ## Re-rooting Server Queries
 
   In our tutorial application we have a top-level component that queries for `:widget`. The queries must compose to
@@ -112,6 +110,9 @@
           restructured-response (rewrite server-response)]
           (callback restructured-response)))
   ```
+
+  NOTE: As of alpha26 `process-roots` only handles joins as new roots. It will not follow the branches of a union
+  nor can it re-root a plain property.
   ")
 
 (defcard-doc "
