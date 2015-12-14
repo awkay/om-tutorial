@@ -26,40 +26,24 @@
 ;; play with them more as well).
 
 (defn descend
-  "Recursively descend the state database, tracking position in :db-path. If given a ref as the key, rewrites
-   db-path to be rooted at that ref.
+  "Recursively descend the state database, tracking position in :db-path. If given an ident as the key, rewrites
+   db-path to be rooted at that ident.
   "
   [env key]
   (if (om/ident? key)
     (assoc env :db-path [key])
     (update-in env [:db-path] conj key)))
 
-(defn parse-with-reader
-  "Cause this parse to recursively descend, but switch to using the named reader function.
-
-  DEPRECATED? I think the join processing will always be used over this... This was a first attempt function
-
-  `reader`: The reader function to start calling from parser
-  `env`:The current parse environment
-  `key`:The key just hit
-  `descend?` : A truthy value (e.g. :descend). Should this function move env's :db-path for this key?
-  "
-  [reader {:keys [parser query] :as env} key descend?]
-  (let [env' (cond-> (assoc env :reader reader)
-                     descend? (descend key)
-                     )]
-    (parser env' query)))
-
-(defn follow-ref
-  "Follow the given ref in the env, or just return the obj if it is not a ref."
-  [{:keys [state]} obj-or-ref]
-  (if (om/ident? obj-or-ref)
-    (get-in @state obj-or-ref)
-    obj-or-ref
+(defn follow-ident
+  "Follow the given ident in the env, or just return the obj if it is not an ident."
+  [{:keys [state]} obj-or-ident]
+  (if (om/ident? obj-or-ident)
+    (get-in @state obj-or-ident)
+    obj-or-ident
     ))
 
 (defn get-in-db-path
-  "This is just like get-in; however, it walks the path and if it hits an Om ref, it will
+  "This is just like get-in; however, it walks the path and if it hits an Om ident, it will
   follow that to the real object. This is useful for walking the overall graph as the query
   might need."
   [{:keys [db-path state] :as env}]
@@ -67,21 +51,21 @@
     (if (empty? path)
       node
       (let [k (first path)
-            v (if (om/ident? k) (get-in @state k) (follow-ref env (get node k)))]
+            v (if (om/ident? k) (get-in @state k) (follow-ident env (get node k)))]
         (recur v (rest path))
         ))))
 
 
 (defn dbget
   "Get the specified key from the state in the environment, honoring the current :db-path.
-  Follows refs (in the db-path variable OR the app state) to top-level tables."
+  Follows idents (in the db-path variable OR the app state) to top-level tables."
   ([env key] (dbget env key nil))
   ([{:keys [state db-path] :as env} key dflt]
    (if (om/ident? key)
      (get-in @state key dflt)
      (let [node-state (get-in-db-path env)
            value (get node-state key dflt)]
-       (follow-ref env value)
+       (follow-ident env value)
        ))))
 
 (defn db-value
@@ -106,7 +90,7 @@
   When the node is an object it applies the sub-query against that object (possibly recursing futher if
   it finds more joins).
 
-  All Om refs are automatically resolved (followed). It is possible this can create infinite loops (especially if
+  All Om idents are automatically resolved (followed). It is possible this can create infinite loops (especially if
   you use the `...` notation in a join query). To prevent this, a `:depth` key is added to the env to track
   the current depth of joins (from root), and recursion will abort (peacefully) at the default recursion limit of 20.
   Use `:limit n` as an additional named parameter to limit the depth of the recursion to `n`.
@@ -135,14 +119,14 @@
         )
       )))
 
-(defn ref-at-db-path
-  "Returns the ref at the :db-path in the environment instead of following it to an object. Returns nil if the
+(defn ident-at-db-path
+  "Returns the ident at the :db-path in the environment instead of following it to an object. Returns nil if the
   item at the db-path is not an Ident."
   [{:keys [db-path state] :as env}]
   (loop [node @state path db-path]
     (let [k (first path)
           v (if (om/ident? k) (get-in @state k) (get node k))
-          v' (follow-ref env v)]
+          v' (follow-ident env v)]
       (if (= 1 (count path))
         (cond
           (om/ident? k) k
@@ -152,9 +136,9 @@
         ))))
 
 (defn ui-key
-  "Transform a component Om ref into the proper UI property top-level key."
-  [ref]
-  (let [[persistent-key id] ref]
+  "Transform a component Om ident into the proper UI property top-level key."
+  [ident]
+  (let [[persistent-key id] ident]
     [(keyword (str "ui." (namespace persistent-key)) (name persistent-key)) id]
     ))
 
@@ -163,8 +147,8 @@
   function should be used in conjunction with attributes namespaced as `:ui/...` so that the other read helpers
   can remove them from remote queries (TODO)."
   [{:keys [state db-path] :as env} key]
-  (if-let [ref (ref-at-db-path env)]
-    (let [uikey (ui-key ref)
+  (if-let [ident (ident-at-db-path env)]
+    (let [uikey (ui-key ident)
           node (get-in @state uikey)
           value (get node key)]
       (when value {:value value})

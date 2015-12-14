@@ -4,7 +4,7 @@
                  [org.clojure/clojurescript "1.7.170" :scope "provided"]
                  [devcards "0.2.1-2" :exclusions [org.omcljs/om cljsjs/react-dom org.clojure/tools.reader cljsjs/react]]
                  [datascript "0.13.3"]
-                 [org.omcljs/om "1.0.0-alpha26"]
+                 [org.omcljs/om "1.0.0-alpha28"]
                  [figwheel-sidecar "0.5.0-2" :exclusions [clj-time joda-time org.clojure/tools.reader] :scope "test"]
                  [cljsjs/codemirror "5.8.0-0"]]
 

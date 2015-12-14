@@ -67,7 +67,7 @@
 (dc/deftest parsing-utility-tests
             "follow-ref"
             (let [env {:state (atom {:db/id {1 {:db/id 1 :person/name "Joe"}}})}]
-              (is (= {:db/id 1 :person/name "Joe"} (p/follow-ref env [:db/id 1]))))
+              (is (= {:db/id 1 :person/name "Joe"} (p/follow-ident env [:db/id 1]))))
             )
 
 (let [initial-state {:last-error "Some Error" :new-person "Sally"
