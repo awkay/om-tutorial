@@ -18,6 +18,9 @@
   # Remote Fetch
 
   TODO: The notes below are a mismash of thoughts...they are more notes to myself as placeholders for what to develop here...
+  the notes refer to code that is in development in the same app in `src/main`. The remote helper functions can be
+  improved to take a form that allows full generalization over fetch such that loading (even lazily, at depth) can be
+  written in a simple form. I'm hoping to finish these helpers by Dec 17th...
 
   ### Remote Fetch
 
@@ -59,7 +62,7 @@
   ```
 
   The `recurse-remote` function basically means \"I have to include this node, because it is on the path to real
-    remote data, but it itself needs nothing from the server\". The `fetch-if-missing` function has quite a bit
+    remote data, but itself needs nothing from the server\". The `fetch-if-missing` function has quite a bit
   of logic in it, but basically means \"Everything from here down is valid to ask the server about\".
 
   The `:make-root` flag (which can be boolean or any other keyword, but only has an effect if it is `:make-root` or `true`)
