@@ -189,7 +189,7 @@
   ; ^ note paren        ^^^^ The join selector      ^^^^^^^^ parameters  ^ note paren
   ```
 
-  It is *very important to realize* that the parameters in the query above we're pulled directly
+  It is *very important to realize* that the parameters in the query above were pulled directly
   out of the author's hindquarters. Om knows nothing about them, other than they are legal
   parts of the query grammar. If you want to give them meaning then you'll have to add code that
   does so.
