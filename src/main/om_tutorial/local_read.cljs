@@ -10,6 +10,5 @@
     :last-error {:value (get @state key)}
     (if (om/ident? (:key ast))
       {:value (get-in @state (:key ast))}
-      {:value (om/db->tree query (get @state key) @state)}
-      )))
+      {:value (om/db->tree query (get @state key) @state)})))
 

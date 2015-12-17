@@ -8,8 +8,7 @@
                                      1 {:id 1 :name "Sally" :age 22 :married false}
                                      2 {:id 2 :name "Joe" :age 22 :married false}
                                      3 {:id 3 :name "Paul" :age 22 :married true}
-                                     4 {:id 4 :name "Mary" :age 22 :married false}}
-                      }))
+                                     4 {:id 4 :name "Mary" :age 22 :married false}}}))
 
 (defn read [{:keys [state query]} key params]
   (case key

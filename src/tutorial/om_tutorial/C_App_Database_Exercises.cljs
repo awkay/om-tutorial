@@ -1,6 +1,5 @@
 (ns om-tutorial.C-App-Database-Exercises
-  (:require-macros
-    [cljs.test :refer [is]])
+  (:require-macros [cljs.test :refer [is]])
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
             [om-tutorial.app-database.exercises :refer [cars-table favorites ex3-uidb]]
@@ -15,8 +14,7 @@
   placeholders for each exercise.
 
   When you have completed the task described by an exercise, the tests
-  for those exercises will turn green.
-")
+  for those exercises will turn green.")
 
 (dc/deftest exercise-1
   "In this exercise, you'll verify that you understand how to create a

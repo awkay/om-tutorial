@@ -12,8 +12,8 @@
                     (let [schema {:person/mate {:db/cardinality :db.cardinality/one}}
                           conn (d/create-conn schema)]
                       (d/transact conn
-                                  [{:db/id 1 :person/name "Sam" :person/mate 2 :n/a 2}
-                                   {:db/id 2 :person/name "Tammy" :person/mate 1}])
+                        [{:db/id 1 :person/name "Sam" :person/mate 2 :n/a 2}
+                         {:db/id 2 :person/name "Tammy" :person/mate 1}])
                       conn)))
 
 (defmulti server-read om/dispatch)
@@ -43,8 +43,7 @@
                  (fn [acc [cid dtmpid]]
                    (assoc acc [:db/id cid] [:db/id (dscript-tempid->real-id dtmpid)]))
                  {}
-                 client-tempids->dscript-tempids)
-        ]
+                 client-tempids->dscript-tempids)]
     {:tempids remaps}))
 
 ;; {:value {:keys … :tempids … :result ...} :action (fn [] ..)}
@@ -58,9 +57,7 @@
    :action (fn []
              ;(println "SERVER ASKED TO DELETE" id)
              (d/transact server-state [[:db.fn/retractEntity id]])
-             nil
-             )
-   })
+             nil)})
 
 (def server-parser (om/parser {:read server-read :mutate server-mutate}))
 
@@ -69,10 +66,9 @@
   [k v]
   (case k
     'app/save (-> v
-                  (merge (:result v))
-                  (dissoc :result))
-    v)
-  )
+                (merge (:result v))
+                (dissoc :result))
+    v))
 
 ; NOTE: LOTS TO DO STILL...ops, error simulation, etc.
 (defn simulated-server
@@ -81,6 +77,6 @@
   "
   [query]
   (let [resp (server-parser {:state server-state} query)
-    resp' (into {} (map (fn [[k v]] [k (pull-up-ids k v)]) resp))]
+        resp' (into {} (map (fn [[k v]] [k (pull-up-ids k v)]) resp))]
     resp'))
 

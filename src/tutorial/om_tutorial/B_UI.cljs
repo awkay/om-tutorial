@@ -8,23 +8,23 @@
             ))
 
 (defui Widget
-       Object
-       (render [this]
-               (dom/div nil "Hello world")))
+  Object
+  (render [this]
+    (dom/div nil "Hello world")))
 
 (defui WidgetWithHook
-       Object
-       (componentWillUpdate [this nextprops nextstate] (println "Component will update"))
-       (render [this]
-               (dom/div nil "Hello world")))
+  Object
+  (componentWillUpdate [this nextprops nextstate] (println "Component will update"))
+  (render [this]
+    (dom/div nil "Hello world")))
 
 (def widget (om/factory Widget))
 
 (defui WidgetWithProperties
-       Object
-       (render [this]
-               (let [{:keys [name]} (om/props this)]
-                 (dom/div nil (str "Hello " name)))))
+  Object
+  (render [this]
+    (let [{:keys [name]} (om/props this)]
+      (dom/div nil (str "Hello " name)))))
 
 (def prop-widget (om/factory WidgetWithProperties))
 
@@ -87,30 +87,28 @@
 (defcard props-card (prop-widget {:name "Sam"}))
 
 (defui Person
-       Object
-       (render [this]
-               (let [{:keys [name]} (om/props this)]
-                 (dom/li nil name))))
+  Object
+  (render [this]
+    (let [{:keys [name]} (om/props this)]
+      (dom/li nil name))))
 
 (def person (om/factory Person {:keyfn :name}))
 
 (defui PeopleList
-       Object
-       (render [this]
-               (let [people (om/props this)]
-                 (dom/ul nil (map person people))
-                 )))
+  Object
+  (render [this]
+    (let [people (om/props this)]
+      (dom/ul nil (map person people)))))
 
 (def people-list (om/factory PeopleList))
 
 (defui Root
-       Object
-       (render [this]
-               (let [{:keys [people number]} (om/props this)]
-                 (dom/div nil
-                          (dom/span nil (str "My lucky number is " number " and I have the following friends:"))
-                          (people-list people))
-                 )))
+  Object
+  (render [this]
+    (let [{:keys [people number]} (om/props this)]
+      (dom/div nil
+        (dom/span nil (str "My lucky number is " number " and I have the following friends:"))
+        (people-list people)))))
 
 (def root (om/factory Root))
 
@@ -147,24 +145,22 @@
   At this point (if you have not already) you should play with the code in `B-UI.cljs`. Search for `root-render`
   and then scan backwards to the source. You should try adding an object to the properties (another person),
   and also try playing with editing/adding to the DOM.
-  "
-  )
+  ")
 
 (defcard root-render (root {:number 52 :people [{:name "Sam"} {:name "Joe"}]}))
 
 (defui Root-computed
-       Object
-       (render [this]
-               (let [{:keys [people number b]} (om/props this)
-                     {:keys [incHandler boolHandler]} (om/get-computed this)]
-                 (dom/div nil
-                          ; code pprinter cannot deal with #js on rendering source. Using clj->js instead
-                          (dom/button (clj->js {:onClick #(boolHandler)}) "Toggle Luck")
-                          (dom/button (clj->js {:onClick #(incHandler)}) "Increment Number")
-                          (dom/span nil (str "My " (if b "" "un") "lucky number is " number
-                                             " and I have the following friends:"))
-                          (people-list people))
-                 )))
+  Object
+  (render [this]
+    (let [{:keys [people number b]} (om/props this)
+          {:keys [incHandler boolHandler]} (om/get-computed this)]
+      (dom/div nil
+        ; code pprinter cannot deal with #js on rendering source. Using clj->js instead
+        (dom/button (clj->js {:onClick #(boolHandler)}) "Toggle Luck")
+        (dom/button (clj->js {:onClick #(incHandler)}) "Increment Number")
+        (dom/span nil (str "My " (if b "" "un") "lucky number is " number
+                        " and I have the following friends:"))
+        (people-list people)))))
 
 (def root-computed (om/factory Root-computed))
 
@@ -200,20 +196,18 @@
 
   Open B-UI.cljs, search for `passing-callbacks-via-computed`, and you'll find the card shown below. Interact with it
   in your browser, play with the source, and make sure you understand everything we've covered so far.
-  "
-  )
+  ")
 
 (defcard passing-callbacks-via-computed
-         (fn [data-atom-from-devcards _]
-           (let [prop-data @data-atom-from-devcards
-                 sideband-data {:incHandler  (fn [] (swap! data-atom-from-devcards update-in [:number] inc))
-                                :boolHandler (fn [] (swap! data-atom-from-devcards update-in [:b] not))}
-                 ]
-             (root-computed (om/computed prop-data sideband-data)))
-           )
-         {:number 42 :people [{:name "Sally"}] :b false}
-         {:inspect-data true
-          :history true})
+  (fn [data-atom-from-devcards _]
+    (let [prop-data @data-atom-from-devcards
+          sideband-data {:incHandler  (fn [] (swap! data-atom-from-devcards update-in [:number] inc))
+                         :boolHandler (fn [] (swap! data-atom-from-devcards update-in [:b] not))}
+          ]
+      (root-computed (om/computed prop-data sideband-data))))
+  {:number 42 :people [{:name "Sally"}] :b false}
+  {:inspect-data true
+   :history      true})
 
 (defcard-doc
   "

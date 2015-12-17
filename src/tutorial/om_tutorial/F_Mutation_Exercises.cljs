@@ -1,7 +1,5 @@
 (ns om-tutorial.F-Mutation-Exercises
-  (:require-macros
-    [cljs.test :refer [is]]
-    )
+  (:require-macros [cljs.test :refer [is]] )
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
             [om-tutorial.queries.exercise-util :as u]

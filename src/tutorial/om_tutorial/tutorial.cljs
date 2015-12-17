@@ -16,7 +16,6 @@
     om-tutorial.H-Remote-Mutation
     om-tutorial.I-Path-Optimization
     om-tutorial.J-Advanced-Queries
-    om-tutorial.Z-Glossary
-    ))
+    om-tutorial.Z-Glossary))
 
 

@@ -1,12 +1,10 @@
 (ns om-tutorial.I-Path-Optimization
-(:require-macros
-  [cljs.test :refer [is]]
-  )
-(:require [om.next :as om :refer-macros [defui]]
-  [om.dom :as dom]
-  [devcards.core :as dc :refer-macros [defcard defcard-doc deftest]]
-  [cljs.reader :as r]
-  [om.next.impl.parser :as p]))
+  (:require-macros [cljs.test :refer [is]])
+  (:require [om.next :as om :refer-macros [defui]]
+            [om.dom :as dom]
+            [devcards.core :as dc :refer-macros [defcard defcard-doc deftest]]
+            [cljs.reader :as r]
+            [om.next.impl.parser :as p]))
 
 (defcard-doc
   "

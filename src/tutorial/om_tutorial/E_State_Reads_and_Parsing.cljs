@@ -1,7 +1,5 @@
 (ns om-tutorial.E-State-Reads-and-Parsing
-  (:require-macros
-    [cljs.test :refer [is]]
-    )
+  (:require-macros [cljs.test :refer [is]])
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
             [om-tutorial.state-reads.parser-1 :as parser1]
@@ -73,59 +71,58 @@
   ")
 
 (defcard om-parser
-         "This card will run an Om parser on an arbitrary query, record the calls to the read emitter,
-    and show the trace of those calls in order. Feel free to look at the source of this card.
+  "This card will run an Om parser on an arbitrary query, record the calls to the read emitter,
+and show the trace of those calls in order. Feel free to look at the source of this card.
 
-    Essentially, it creates an Om parser:
+Essentially, it creates an Om parser:
 
-    ```
-        (om/parser {:read read-tracking})
-    ```
+```
+ (om/parser {:read read-tracking})
+```
 
-        where the `read-tracking` simply stores details of each call in an atom and shows those calls
-    when parse is complete.
+ where the `read-tracking` simply stores details of each call in an atom and shows those calls
+when parse is complete.
 
-    The signature of a read function is:
+The signature of a read function is:
 
-    `(read [env dispatch-key params])`
+`(read [env dispatch-key params])`
 
-        where the env contains the state of your application, a reference to your parser (so you can
-                                                                                             call it recursively, if you wish), a query root marker, an AST node describing the exact
-    details of the element's meaning, a path, and *anything else* you want to put in there if
-    you call the parser recursively.
+ where the env contains the state of your application, a reference to your parser (so you can
+                                                                                      call it recursively, if you wish), a query root marker, an AST node describing the exact
+details of the element's meaning, a path, and *anything else* you want to put in there if
+you call the parser recursively.
 
-    Try some queries like these:
+Try some queries like these:
 
-    - `[:a :b]`
-    - `[:a {:b [:c]}]` (note that the AST is recursively built, but only the top keys are actually parsed to trigger reads)
-    - `[(:a { :x 1 })]`  (note the value of params)
-    "
-         (fn [state _]
-           (let [{:keys [v error]} @state
-                 trace (atom [])
-                 read-tracking (fn [env k params]
-                                 (swap! trace conj {:env          (assoc env :parser :function-elided)
-                                                    :dispatch-key k
-                                                    :params       params}))
-                 parser (om/parser {:read read-tracking})]
-             (dom/div nil
-                      (when error
-                        (dom/div nil (str error)))
-                      (dom/input #js {:type     "text"
-                                      :value    v
-                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
-                      (dom/button #js {:onClick #(try
-                                                  (reset! trace [])
-                                                  (swap! state assoc :error nil)
-                                                  (parser {:state {:app-state :your-app-state-here}} (r/read-string v))
-                                                  (swap! state assoc :result @trace)
-                                                  (catch js/Error e (swap! state assoc :error e))
-                                                  )} "Run Parser")
-                      (dom/h4 nil "Parsing Trace")
-                      (html-edn (:result @state))
-                      )))
-         {}
-         {:inspect-data false})
+- `[:a :b]`
+- `[:a {:b [:c]}]` (note that the AST is recursively built, but only the top keys are actually parsed to trigger reads)
+- `[(:a { :x 1 })]`  (note the value of params)
+"
+  (fn [state _]
+    (let [{:keys [v error]} @state
+          trace (atom [])
+          read-tracking (fn [env k params]
+                          (swap! trace conj {:env          (assoc env :parser :function-elided)
+                                             :dispatch-key k
+                                             :params       params}))
+          parser (om/parser {:read read-tracking})]
+      (dom/div nil
+        (when error
+          (dom/div nil (str error)))
+        (dom/input #js {:type     "text"
+                        :value    v
+                        :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+        (dom/button #js {:onClick #(try
+                                    (reset! trace [])
+                                    (swap! state assoc :error nil)
+                                    (parser {:state {:app-state :your-app-state-here}} (r/read-string v))
+                                    (swap! state assoc :result @trace)
+                                    (catch js/Error e (swap! state assoc :error e))
+                                    )} "Run Parser")
+        (dom/h4 nil "Parsing Trace")
+        (html-edn (:result @state)))))
+  {}
+  {:inspect-data false})
 
 (defcard-doc
   "
@@ -148,40 +145,39 @@
   ")
 
 (defcard parser-read-trace
-         "This card is similar to the prior card, but it has a read function that just records what keys it was
-         triggered for. Give it an arbitrary legal query, and see what happens.
+  "This card is similar to the prior card, but it has a read function that just records what keys it was
+  triggered for. Give it an arbitrary legal query, and see what happens.
 
-         Some interesting queries:
+  Some interesting queries:
 
-         - `[:a :b :c]`
-         - `[:a {:b [:x :y]} :c]`
-         - `[{:a {:b {:c [:x :y]}}}]`
+  - `[:a :b :c]`
+  - `[:a {:b [:x :y]} :c]`
+  - `[{:a {:b {:c [:x :y]}}}]`
 
-         "
-         (fn [state _]
-           (let [{:keys [v error]} @state
-                 trace (atom [])
-                 read-tracking (fn [env k params]
-                                 (swap! trace conj {:read-called-with-key k}))
-                 parser (om/parser {:read read-tracking})]
-             (dom/div nil
-                      (when error
-                        (dom/div nil (str error)))
-                      (dom/input #js {:type     "text"
-                                      :value    v
-                                      :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
-                      (dom/button #js {:onClick #(try
-                                                  (reset! trace [])
-                                                  (swap! state assoc :error nil)
-                                                  (parser {:state {:app-state :your-app-state-here}} (r/read-string v))
-                                                  (swap! state assoc :result @trace)
-                                                  (catch js/Error e (swap! state assoc :error e))
-                                                  )} "Run Parser")
-                      (dom/h4 nil "Parsing Trace")
-                      (html-edn (:result @state))
-                      )))
-         {}
-         {:inspect-data false})
+  "
+  (fn [state _]
+    (let [{:keys [v error]} @state
+          trace (atom [])
+          read-tracking (fn [env k params]
+                          (swap! trace conj {:read-called-with-key k}))
+          parser (om/parser {:read read-tracking})]
+      (dom/div nil
+        (when error
+          (dom/div nil (str error)))
+        (dom/input #js {:type     "text"
+                        :value    v
+                        :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+        (dom/button #js {:onClick #(try
+                                    (reset! trace [])
+                                    (swap! state assoc :error nil)
+                                    (parser {:state {:app-state :your-app-state-here}} (r/read-string v))
+                                    (swap! state assoc :result @trace)
+                                    (catch js/Error e (swap! state assoc :error e))
+                                    )} "Run Parser")
+        (dom/h4 nil "Parsing Trace")
+        (html-edn (:result @state)))))
+  {}
+  {:inspect-data false})
 
 (defcard-doc
   "
@@ -273,44 +269,41 @@
   below is a devcard that implements exactly this `read` and plugs it into a
   parser like this:"
   (dc/mkdn-pprint-source read-42)
-  (dc/mkdn-pprint-source parser-42)
-  )
+  (dc/mkdn-pprint-source parser-42))
 
 (defn parser-tester [parser]
   (fn [state _]
     (let [{:keys [v error]} @state]
       (dom/div nil
-               (dom/input #js {:type     "text"
-                               :value    v
-                               :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
-               (dom/button #js {:onClick #(try
-                                           (swap! state assoc :error "" :result (parser {:state (atom (:db @state))} (r/read-string v)))
-                                           (catch js/Error e (swap! state assoc :error e))
-                                           )} "Run Parser")
-               (when error
-                 (dom/div nil (str error)))
-               (dom/h4 nil "Query Result")
-               (html-edn (:result @state))
-               (dom/h4 nil "Database")
-               (html-edn (:db @state))
-               ))))
+        (dom/input #js {:type     "text"
+                        :value    v
+                        :onChange (fn [evt] (swap! state assoc :v (.. evt -target -value)))})
+        (dom/button #js {:onClick #(try
+                                    (swap! state assoc :error "" :result (parser {:state (atom (:db @state))} (r/read-string v)))
+                                    (catch js/Error e (swap! state assoc :error e))
+                                    )} "Run Parser")
+        (when error
+          (dom/div nil (str error)))
+        (dom/h4 nil "Query Result")
+        (html-edn (:result @state))
+        (dom/h4 nil "Database")
+        (html-edn (:db @state))))))
 
 (defcard property-read-for-the-meaning-of-life-the-universe-and-everything
-         "This card is using the parser/read pairing shown above (the read returns
-         the value 42 no matter what it is asked for). Run any query you
-         want in it, and check out the answer.
+  "This card is using the parser/read pairing shown above (the read returns
+  the value 42 no matter what it is asked for). Run any query you
+  want in it, and check out the answer.
 
-         This card just runs `(parser-42 {:state {} } your-query)` and reports the result.
+  This card just runs `(parser-42 {:state {} } your-query)` and reports the result.
 
-         Some examples to try:
+  Some examples to try:
 
-         - `[:a :b :c]`
-         - `[:what-is-6-x-7]`
-         - `[{:a {:b {:c {:d [:e]}}}}]` (yes, there is only one answer)
-         "
-         (parser-tester parser-42)
-         {:db {}}
-         )
+  - `[:a :b :c]`
+  - `[:what-is-6-x-7]`
+  - `[{:a {:b {:c {:d [:e]}}}}]` (yes, there is only one answer)
+  "
+  (parser-tester parser-42)
+  {:db {}})
 
 (defn property-read [{:keys [state]} key params] {:value (get @state key :not-found)})
 (def property-parser (om/parser {:read property-read}))
@@ -329,25 +322,23 @@
   (dc/mkdn-pprint-source property-read)
   "
   Just assumes the property will be in the top-level of the app state atom.
-  "
-  )
+  ")
 
 (defcard trivial-property-reader
-         "This card is using the `property-read` function above in a parser.
+  "This card is using the `property-read` function above in a parser.
 
-         The database itself is shown at the bottom of the card, after the
-         result.
+  The database itself is shown at the bottom of the card, after the
+  result.
 
-         Run some queries and see what you get. Some suggestions:
+  Run some queries and see what you get. Some suggestions:
 
-         - `[:a :b :c]`
-         - `[:what-is-6-x-7]`
-         - `[{:a {:b {:c {:d [:e]}}}}]` (yes, there is only one answer)
-         "
-         (parser-tester property-parser)
-         {:db {:a 1 :b 2 :c 99}}
-         {:inspect-data false}
-         )
+  - `[:a :b :c]`
+  - `[:what-is-6-x-7]`
+  - `[{:a {:b {:c {:d [:e]}}}}]` (yes, there is only one answer)
+  "
+  (parser-tester property-parser)
+  {:db {:a 1 :b 2 :c 99}}
+  {:inspect-data false})
 
 (def flat-app-state (atom {:a 1 :user/name "Sam" :c 99}))
 
@@ -532,15 +523,13 @@
   (dc/mkdn-pprint-source parser3/parse-result-secs)
   parser3/parse-result-secs
   (dc/mkdn-pprint-source parser3/parse-result-ms)
-  parser3/parse-result-ms
-  )
+  parser3/parse-result-ms)
 
 
 (let [sam {:db/id 1 :person/name "Sam" :person/mate [:people/by-id 2]}
       jenny {:db/id 2 :person/name "Jenny" :person/mate [:people/by-id 1]}
       app-state {:widget/people [[:people/by-id 1] [:people/by-id 2]]
-                 :people/by-id  {1 sam 2 jenny}
-                 }]
+                 :people/by-id  {1 sam 2 jenny}}]
   (defcard-doc "
       ## Using `db->tree`
 
@@ -550,43 +539,41 @@
 
       For example, given app state (the following are live tests you can play with in the source of this file):
       "
-               app-state
-               )
+    app-state)
+
   (deftest db-tree-tests
-           "
-           - You can read a top-level ident query (no id part, special use of `_`):
-           ```
-           (om/db->tree '[[:widget/people _]] app-state app-state)))
+    "
+    - You can read a top-level ident query (no id part, special use of `_`):
+    ```
+    (om/db->tree '[[:widget/people _]] app-state app-state)))
 
-           ; results in:
+    ; results in:
 
-            {:widget/people [{:db/id 1, :person/name \"Sam\", :person/mate [:people/by-id 2]}
-                             {:db/id 2, :person/name \"Jenny\", :person/mate [:people/by-id 1]}]}
-           ```
-           "
-           (is (= {:widget/people [sam jenny]} (om/db->tree '[[:widget/people _]] app-state app-state)))
-           "- You can read a simple ident query with full ID:
+     {:widget/people [{:db/id 1, :person/name \"Sam\", :person/mate [:people/by-id 2]}
+                      {:db/id 2, :person/name \"Jenny\", :person/mate [:people/by-id 1]}]}
+    ```
+    "
+    (is (= {:widget/people [sam jenny]} (om/db->tree '[[:widget/people _]] app-state app-state)))
+    "- You can read a simple ident query with full ID:
 
-           ```
-           (om/db->tree '[[:people/by-id 2]] app-state app-state)
+    ```
+    (om/db->tree '[[:people/by-id 2]] app-state app-state)
 
-            ; gives
+     ; gives
 
-            {[:people/by-id 2] {:db/id 2, :person/name \"Jenny\", :person/mate [:people/by-id 1]}}
-           ```
-           "
-           (is (= {[:people/by-id 2] jenny} (om/db->tree '[[:people/by-id 2]] app-state app-state)))
-           "- You can use an ident as the key to a join, and follow the graph to generate more of a tree:
+     {[:people/by-id 2] {:db/id 2, :person/name \"Jenny\", :person/mate [:people/by-id 1]}}
+    ```
+    "
+    (is (= {[:people/by-id 2] jenny} (om/db->tree '[[:people/by-id 2]] app-state app-state)))
+    "- You can use an ident as the key to a join, and follow the graph to generate more of a tree:
 
-           ```
-           (om/db->tree '[{[:people/by-id 1] [:person/name {:person/mate [:person/name]}]}] app-state app-state)
+    ```
+    (om/db->tree '[{[:people/by-id 1] [:person/name {:person/mate [:person/name]}]}] app-state app-state)
 
-            ; gives
+     ; gives
 
-            {[:people/by-id 1] {:person/name \"Sam\", :person/mate {:person/name \"Jenny\"}}}
-           ```
-           "
-           (is (= {[:people/by-id 1] {:person/name "Sam", :person/mate {:person/name "Jenny"}}}
-                  (om/db->tree '[{[:people/by-id 1] [:person/name {:person/mate [:person/name]}]}] app-state app-state)))
-
-           ))
+     {[:people/by-id 1] {:person/name \"Sam\", :person/mate {:person/name \"Jenny\"}}}
+    ```
+    "
+    (is (= {[:people/by-id 1] {:person/name "Sam", :person/mate {:person/name "Jenny"}}}
+          (om/db->tree '[{[:people/by-id 1] [:person/name {:person/mate [:person/name]}]}] app-state app-state)))))

@@ -1,8 +1,7 @@
 (ns om-tutorial.client-remoting
   (:require [om-tutorial.parsing :as p]
             [om-tutorial.simulated-server :refer [simulated-server]]
-            [om.next :as om]
-            ))
+            [om.next :as om]))
 
 (defn read-remote
   "The read function used by Om parsing to determine if a remote load should happen for given data.
@@ -13,9 +12,7 @@
   (case key
     :widget (p/recurse-remote env key true)
     :people (p/fetch-if-missing env key :make-root)
-    nil
-    )
-  )
+    nil))
 
 (defn send [remote-queries cb]
   (let [payload (:my-server remote-queries)
@@ -26,7 +23,5 @@
     (js/setTimeout (fn []
                      (println "state to merge " (rewrite server-response))
                      (cb (rewrite server-response))
-                     ) 1000)
-    )
-  )
+                     ) 1000)))
 

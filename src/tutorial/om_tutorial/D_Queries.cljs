@@ -1,7 +1,6 @@
 (ns om-tutorial.D-Queries
   (:require-macros
-    [cljs.test :refer [is]]
-    )
+    [cljs.test :refer [is]])
   (:require [om.next :as om :refer-macros [defui]]
             [om.next.impl.parser :as p]
             [om-tutorial.queries.query-editing :as qe]
@@ -9,8 +8,7 @@
             [cljs.reader :as r]
             [om-tutorial.queries.query-demo :as qd]
             [devcards.util.edn-renderer :refer [html-edn]]
-            [devcards.core :as dc :refer-macros [defcard defcard-doc]]
-            ))
+            [devcards.core :as dc :refer-macros [defcard defcard-doc]]))
 
 (defcard-doc
   "
@@ -78,22 +76,22 @@
   ")
 
 (defcard query-example-1
-         "
-         This query card has a database that contains exactly one thing: the details about a person.
+  "
+  This query card has a database that contains exactly one thing: the details about a person.
 
-         Play with the query and ask for this person's age and database ID.
+  Play with the query and ask for this person's age and database ID.
 
-         Notes:
+  Notes:
 
-         - The query has to be a vector
-         - The result is a map, with keys that match the selectors in the query.
-         "
-         qe/query-editor
-         {:query        "[:person/name]"
-          :query-result {}
-          :db           {:db/id 1 :person/name "Sam" :person/age 23 :person/favorite-date (js/Date.)}
-          :id           "query-example-1"}
-         {:inspect-data false})
+  - The query has to be a vector
+  - The result is a map, with keys that match the selectors in the query.
+  "
+  qe/query-editor
+  {:query        "[:person/name]"
+   :query-result {}
+   :db           {:db/id 1 :person/name "Sam" :person/age 23 :person/favorite-date (js/Date.)}
+   :id           "query-example-1"}
+  {:inspect-data false})
 
 
 (defcard-doc
@@ -139,35 +137,35 @@
   ")
 
 (defcard query-example-2
-         "
-         This query card has a more interesting database in it with some performance statistics
-         linked into a table and chart. Note that
-         the supplied query for the table is for the disk data, while the query for the
-         chart combines multiple bits of data.
+  "
+  This query card has a more interesting database in it with some performance statistics
+  linked into a table and chart. Note that
+  the supplied query for the table is for the disk data, while the query for the
+  chart combines multiple bits of data.
 
-         Play with the query a bit to make sure you understand it (e.g. erase it and try to write it from scratch).
+  Play with the query a bit to make sure you understand it (e.g. erase it and try to write it from scratch).
 
-         Again note that the query result is a map in tree form, and remember that
-         a tree is exactly what you need for a UI!
+  Again note that the query result is a map in tree form, and remember that
+  a tree is exactly what you need for a UI!
 
-         Some other interesting queries to try:
+  Some other interesting queries to try:
 
-         - `[:table]`
-         - `[{:chart [{:data [:cpu-usage]}]}]`
-         - `[ [:statistics :performance] ]`
-         - `[{[:statistics :performance] [:disk-activity]}]`
-         "
-         qe/query-editor
-         {:query        "[{:table [:name {:data [:disk-activity]}]}   {:chart [:name {:data [:disk-activity :cpu-usage]}]}]"
-          :query-result {}
-          :db           {:table      {:name "Disk Performance Table" :data [:statistics :performance]}
-                         :chart      {:name "Combined Graph" :data [:statistics :performance]}
-                         :statistics {:performance {
-                                                    :cpu-usage        [45 15 32 11 66 44]
-                                                    :disk-activity    [11 34 66 12 99 100]
-                                                    :network-activity [55 87 20 01 22 82]}}}
-          :id           "query-example-2"}
-         {:inspect-data false})
+  - `[:table]`
+  - `[{:chart [{:data [:cpu-usage]}]}]`
+  - `[ [:statistics :performance] ]`
+  - `[{[:statistics :performance] [:disk-activity]}]`
+  "
+  qe/query-editor
+  {:query        "[{:table [:name {:data [:disk-activity]}]}   {:chart [:name {:data [:disk-activity :cpu-usage]}]}]"
+   :query-result {}
+   :db           {:table      {:name "Disk Performance Table" :data [:statistics :performance]}
+                  :chart      {:name "Combined Graph" :data [:statistics :performance]}
+                  :statistics {:performance {
+                                             :cpu-usage        [45 15 32 11 66 44]
+                                             :disk-activity    [11 34 66 12 99 100]
+                                             :network-activity [55 87 20 01 22 82]}}}
+   :id           "query-example-2"}
+  {:inspect-data false})
 
 (defcard-doc "
 
@@ -211,32 +209,30 @@
   ")
 
 (defcard ident-based-queries
-         "The database in this card contains various tables. Use idents in queries to experiement with this
-         query feature. Note that even though you are querying by ident (which is a vector) you *still need*
-         the containing vector (which is the top-level container for queries).
+  "The database in this card contains various tables. Use idents in queries to experiement with this
+  query feature. Note that even though you are querying by ident (which is a vector) you *still need*
+  the containing vector (which is the top-level container for queries).
 
-          NOTE: The edn renderer sometimes misformats idents by vertically moving the closing bracket down a line.
-          The *query result* of the suggested queries is keyed by the ident:
+   NOTE: The edn renderer sometimes misformats idents by vertically moving the closing bracket down a line.
+   The *query result* of the suggested queries is keyed by the ident:
 
-          ```
-          { [:people/by-id 2] ... }
-          ```
+   ```
+   { [:people/by-id 2] ... }
+   ```
 
-          Some interesting queries to try:
+   Some interesting queries to try:
 
-          - `[ [:people/by-id 2] ]`
-          - `[{[:people/by-id 1] [:person/age]} {[:people/by-id 3] [:person/name]}]`
-         "
-         qe/query-editor
-         {:query        "[ ]"
-          :query-result {}
-          :db           {
-                         :people/by-id {1 {:person/name "Sally" :person/age 33}
-                                        2 {:person/name "Jesse" :person/age 43}
-                                        3 {:person/name "Bo" :person/age 13}}
-                         }
-          :id           "ident-based-queries"}
-         {:inspect-data false})
+   - `[ [:people/by-id 2] ]`
+   - `[{[:people/by-id 1] [:person/age]} {[:people/by-id 3] [:person/name]}]`
+  "
+  qe/query-editor
+  {:query        "[ ]"
+   :query-result {}
+   :db           {:people/by-id {1 {:person/name "Sally" :person/age 33}
+                                 2 {:person/name "Jesse" :person/age 43}
+                                 3 {:person/name "Bo" :person/age 13}}}
+   :id           "ident-based-queries"}
+  {:inspect-data false})
 
 
 (defcard-doc
@@ -257,34 +253,31 @@
   ")
 
 (defcard union-queries
-         "The database in this card contains some pretend UI panels of different types (and assumes you could
-         have more than one of each). There is a panel of \"type\" `:panelA`, whose ID is 1. The same for B and
-         C. The `:current-panel` bit of state is a singleton ident that is meant to stand for the panel I
-         want to, say, show on the screen. The `:panels` bit of state is a list of panels.
+  "The database in this card contains some pretend UI panels of different types (and assumes you could
+  have more than one of each). There is a panel of \"type\" `:panelA`, whose ID is 1. The same for B and
+  C. The `:current-panel` bit of state is a singleton ident that is meant to stand for the panel I
+  want to, say, show on the screen. The `:panels` bit of state is a list of panels.
 
-         Remember that a map with multiple k-v pairs is a union query, and you should think of it as \"this
-         the a map of sub-query selectors to apply to the object you find in the database, and you pick
-         one via the keyword of the ident of that object\".
+  Remember that a map with multiple k-v pairs is a union query, and you should think of it as \"this
+  the a map of sub-query selectors to apply to the object you find in the database, and you pick
+  one via the keyword of the ident of that object\".
 
-          Some interesting queries to try:
+   Some interesting queries to try:
 
-          - `[{:panels {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]` (access a list)
-          - `[{:current-panel {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]`  (access a singleton)
-          - `[{[:panelA 1] {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]`  (access a singleton by ident)
-         "
-         qe/query-editor
-         {:query        "[{:panels {:panelA [:boo] :panelB [:goo] :panelC [:sticky]}}]"
-          :query-result {}
-          :db           {
-                         :panels        [[:panelA 1] [:panelB 1] [:panelC 1]]
-                         :panelA        {1 {:boo 42}}
-                         :panelB        {1 {:goo 8}}
-                         :panelC        {1 {:sticky true}}
-                         :current-panel [:panelA 1]
-                         }
-          :id           "union-queries"}
-         {:inspect-data false})
-
+   - `[{:panels {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]` (access a list)
+   - `[{:current-panel {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]`  (access a singleton)
+   - `[{[:panelA 1] {:panelC [:sticky], :panelA [:boo], :panelB [:goo]}}]`  (access a singleton by ident)
+  "
+  qe/query-editor
+  {:query        "[{:panels {:panelA [:boo] :panelB [:goo] :panelC [:sticky]}}]"
+   :query-result {}
+   :db           {:panels        [[:panelA 1] [:panelB 1] [:panelC 1]]
+                  :panelA        {1 {:boo 42}}
+                  :panelB        {1 {:goo 8}}
+                  :panelC        {1 {:sticky true}}
+                  :current-panel [:panelA 1]}
+   :id           "union-queries"}
+  {:inspect-data false})
 
 (defcard-doc
   "

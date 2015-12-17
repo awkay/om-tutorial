@@ -9,8 +9,7 @@
 (defmethod mutate 'app/set-new-person
   [{:keys [state] :as env} k {:keys [value]}]
   (println "VALUE: " value)
-  {:action (fn [] (swap! state assoc :new-person value))}
-  )
+  {:action (fn [] (swap! state assoc :new-person value))})
 
 (defn ref-to-id [r] (if (om/ident? r) (second r) r))
 (defn obj-deref [obj] (into {} (map (fn [[k v]] [k (ref-to-id v)])) obj))
@@ -19,16 +18,14 @@
   [{:keys [state ast] :as env} k {:keys [name]}]
   ;; rewrite the save params using local state
   (let [save-ast (assoc ast :params {:people (mapv obj-deref (vals (get @state :db/id)))})]
-    { :my-server save-ast })
-  )
+    {:my-server save-ast}))
 
 ;"Clear the people, which will trigger a re-read from remote."
 (defmethod mutate 'app/refresh
   [{:keys [state ast] :as env} k {:keys [name]}]
   {:action (fn []
              (swap! state assoc-in [:widget :people] nil)
-             )}
-  )
+             )})
 
 ;"Add a person. Does this locally only, with temporary IDs. These are persisted on save."
 (defmethod mutate 'app/add-person
@@ -43,9 +40,7 @@
                                                                     ))]
                (swap! state assoc :new-person "")
                (swap! state update-in [:db/id] assoc temp-id {:db/id temp-id :person/name name})
-               (swap! state update-in [:widget :people] create-or-conj [:db/id temp-id]))
-             )
-   })
+               (swap! state update-in [:widget :people] create-or-conj [:db/id temp-id])))})
 
 (defn remove-person
   "Remove a person helper function"
@@ -56,15 +51,13 @@
   (println "delete " id)
   {:my-server ast
    :action    (fn []
-               ; (swap! state update-in [:widget :people] (partial remove-person id))
-                )
-   })
+                ; (swap! state update-in [:widget :people] (partial remove-person id))
+                )})
 
 (defmethod mutate 'app/toggle-person-checkbox
   [{:keys [state]} k {:keys [db/id]}]
   {:action (fn []
              (let [path [:db/id id :ui/checked]]
                (swap! state update-in path not))
-             )}
-  )
+             )})
 

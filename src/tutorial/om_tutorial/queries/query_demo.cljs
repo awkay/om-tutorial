@@ -32,39 +32,32 @@
              {
               :sidebar-open false
               :thing-widget {:display-mode :detailed
-                             :things       [{:id 1 :name "Boo"} {:id 2 :name "Bah"}]}
-              }
-             })
+                             :things       [{:id 1 :name "Boo"} {:id 2 :name "Bah"}]}}})
 
 (defui Thing
   static om/IQuery
   (query [this] [:ui/checked :id :name])
   static om/Ident
-  (ident [this props] [:things/by-id (:id props)])
-  )
+  (ident [this props] [:things/by-id (:id props)]))
 
 (defui Things
   static om/IQuery
   (query [this] [:display-mode {:things (om/get-query Thing)}])
   static om/Ident
-  (ident [this props] [:widget :thing-list])
-  )
+  (ident [this props] [:widget :thing-list]))
 
 (defui Dashboard
   static om/IQuery
   (query [this] [:sidebar-open {:thing-widget (om/get-query Things)}])
   static om/Ident
-  (ident [this props] [:widget :dashboard])
-  )
+  (ident [this props] [:widget :dashboard]))
 
 (defui DRoot
   static om/IQuery
-  (query [this] [{:dashboard (om/get-query Dashboard)}])
-  )
+  (query [this] [{:dashboard (om/get-query Dashboard)}]))
 
 (comment
   ; NOTE TO SELF: Good example of converting an entire app state database tree into norm form
   istate
   (om/get-query DRoot)
-  (pprint (om/tree->db DRoot istate true))
-  )
+  (pprint (om/tree->db DRoot istate true)))

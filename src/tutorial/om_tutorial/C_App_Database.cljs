@@ -1,7 +1,6 @@
 (ns om-tutorial.C-App-Database
   (:require-macros
-    [cljs.test :refer [is]]
-    )
+    [cljs.test :refer [is]])
   (:require [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
             [devcards.core :as dc :refer-macros [defcard defcard-doc]]
@@ -150,6 +149,5 @@
 
   If you chose to use an alternate database format, _then_ you'll have to manage the normalization
   among other things (like merging in novelty).
-  "
-  )
+  ")
 

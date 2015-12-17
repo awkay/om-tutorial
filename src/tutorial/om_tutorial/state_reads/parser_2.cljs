@@ -8,8 +8,7 @@
                                      1 {:id 1 :name "Sally" :age 22 :married false}
                                      2 {:id 2 :name "Joe" :age 33 :married false}
                                      3 {:id 3 :name "Paul" :age 45 :married true :married-to [:people/by-id 1]}
-                                     4 {:id 4 :name "Mary" :age 19 :married false}}
-                      }))
+                                     4 {:id 4 :name "Mary" :age 19 :married false}}}))
 
 ; we're going to add person to the env as we go
 (defn read [{:keys [parser ast state query person] :as env} dispatch-key params]

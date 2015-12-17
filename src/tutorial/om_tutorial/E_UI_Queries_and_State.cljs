@@ -1,7 +1,5 @@
 (ns om-tutorial.E-UI-Queries-and-State
-  (:require-macros
-    [cljs.test :refer [is]]
-    )
+  (:require-macros [cljs.test :refer [is]])
   (:require [om.next :as om :refer-macros [defui]]
             [om.next.impl.parser :as p]
             [om-tutorial.queries.query-editing :as qe]
@@ -9,8 +7,7 @@
             [cljs.reader :as r]
             [om-tutorial.queries.query-demo :as qd]
             [devcards.util.edn-renderer :refer [html-edn]]
-            [devcards.core :as dc :refer-macros [defcard defcard-doc]]
-            ))
+            [devcards.core :as dc :refer-macros [defcard defcard-doc]]))
 
 (defcard-doc
   "
@@ -62,17 +59,16 @@
   ")
 
 (defcard using-component-with-query-passing-raw-data
-         "
-         This card is simply rendering:
+  "
+  This card is simply rendering:
 
-         ```
-           (qd/person {:person/name \"Sam\"})
-         ```
+  ```
+    (qd/person {:person/name \"Sam\"})
+  ```
 
-         from the definitions above.
-         "
-         (qd/person {:person/name "Sam"})
-         )
+  from the definitions above.
+  "
+  (qd/person {:person/name "Sam"}))
 
 (defcard-doc
   "
@@ -138,13 +134,11 @@
 ")
 
 (defcard sample-rendering-with-result-data
-         (fn [state _] (qd/root @state))
-         {:people [{:db/id 1 :person/name "Joe"}
-                   {:db/id 2 :person/name "Guy"}
-                   {:db/id 3 :person/name "Tammy"}
-                   ]}
-         {:inspect-data true}
-         )
+  (fn [state _] (qd/root @state))
+  {:people [{:db/id 1 :person/name "Joe"}
+            {:db/id 2 :person/name "Guy"}
+            {:db/id 3 :person/name "Tammy"}]}
+  {:inspect-data true})
 
 (defcard-doc "
 
