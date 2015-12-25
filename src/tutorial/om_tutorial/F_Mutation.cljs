@@ -29,7 +29,7 @@
   One way to deal with this nicely is to use a multi-method, dispatched by symbol:
 
   ```
-  (defmulti mutate (om/dispatch))
+  (defmulti mutate om/dispatch)
 
   (defmethod mutate 'app/delete [env key params]
      { :action (fn [] ...) })
