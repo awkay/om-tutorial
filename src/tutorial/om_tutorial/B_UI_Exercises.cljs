@@ -53,7 +53,7 @@
   section's exercises (as it is used by them).
 
   The overall UI
-  should look as shown below (which is build with plain React dom elements
+  should look as shown below (which is built with plain React dom elements
   and function composition):
 
   "
