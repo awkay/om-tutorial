@@ -20,7 +20,7 @@
 
   Any non-trivial UI needs data. Many non-trivial UIs need a lot of data. React UIs need data to
   be in a tree-like form (parents pass properties down to children). When you combine these facts
-  with Clojurescript and immutabe data structures you end up with some interesting
+  with ClojureScript and immutable data structures you end up with some interesting
   challenges.
 
   The most important one is this: What do I do when I want to show the same information in
