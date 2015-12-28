@@ -121,7 +121,7 @@
   the current user). So, in practice it makes perfect sense to just store those things
   in the top level of your overall application state.
 
-  One criteria you might consider before placing data into a tree is changing it over time (in
+  One criterion you might consider before placing data into a tree is changing it over time (in
   value or location). If you nest some bit of state way down in a tree and need to update
   that state, you'll end up writing code that is tied to that tree structure. For example:
   `(update-in state [:root :list :wrapper-widget :friends] conj new-friend)`. Not only
