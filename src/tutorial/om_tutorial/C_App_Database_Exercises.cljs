@@ -57,11 +57,11 @@
                   :canvas  { :data [ {:id 5 :x 1 :y 3} ]}}}
   ```
 
-  but you want to normalize tool instances using :tools/by-id, data via :data/by-id.
-  Use the invented idents [:toolbar :main] and [:canvas :main] to move the toolbar and canvas to
+  but you want to normalize tool instances using `:tools/by-id`, data via `:data/by-id`.
+  Use the invented idents `[:toolbar :main]` and `[:canvas :main]` to move the toolbar and canvas to
   tables of their own.
 
-  Build the normalized database in ex3-uidb.
+  Build the normalized database in `ex3-uidb`.
 
   The following tests will pass when you get the format correct.
   "
