@@ -83,7 +83,7 @@
   ```
 
   Note also that the objects stored this way are also encouraged to use idents to
-  reference other state. So you could build a database of people are their partners like this:
+  reference other state. So you could build a database of people and their partners like this:
 
   ```
   { :list/people [ [:people/by-id 1] [:people/by-id 2] ... ]
