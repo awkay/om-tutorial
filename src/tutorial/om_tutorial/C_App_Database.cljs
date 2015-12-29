@@ -149,5 +149,7 @@
 
   If you chose to use an alternate database format, _then_ you'll have to manage the normalization
   among other things (like merging in novelty).
+
+  [Let's try some exercises.](#!/om_tutorial.C_App_Database_Exercises)
   ")
 
