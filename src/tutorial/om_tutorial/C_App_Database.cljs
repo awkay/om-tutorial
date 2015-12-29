@@ -20,7 +20,7 @@
 
   Any non-trivial UI needs data. Many non-trivial UIs need a lot of data. React UIs need data to
   be in a tree-like form (parents pass properties down to children). When you combine these facts
-  with Clojurescript and immutabe data structures you end up with some interesting
+  with ClojureScript and immutable data structures you end up with some interesting
   challenges.
 
   The most important one is this: What do I do when I want to show the same information in
@@ -83,7 +83,7 @@
   ```
 
   Note also that the objects stored this way are also encouraged to use idents to
-  reference other state. So you could build a database of people are their partners like this:
+  reference other state. So you could build a database of people and their partners like this:
 
   ```
   { :list/people [ [:people/by-id 1] [:people/by-id 2] ... ]
@@ -121,7 +121,7 @@
   the current user). So, in practice it makes perfect sense to just store those things
   in the top level of your overall application state.
 
-  One criteria you might consider before placing data into a tree is changing it over time (in
+  One criterion you might consider before placing data into a tree is changing it over time (in
   value or location). If you nest some bit of state way down in a tree and need to update
   that state, you'll end up writing code that is tied to that tree structure. For example:
   `(update-in state [:root :list :wrapper-widget :friends] conj new-friend)`. Not only
