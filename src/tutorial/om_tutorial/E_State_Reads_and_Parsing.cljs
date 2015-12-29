@@ -577,3 +577,8 @@ Try some queries like these:
     "
     (is (= {[:people/by-id 1] {:person/name "Sam", :person/mate {:person/name "Jenny"}}}
           (om/db->tree '[{[:people/by-id 1] [:person/name {:person/mate [:person/name]}]}] app-state app-state)))))
+
+(defcard-doc
+  "
+  [Next: Exercises](#!/om_tutorial.E_State_Reads_and_Parsing_Exercises)
+  ")

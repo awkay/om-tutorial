@@ -154,6 +154,7 @@
   If you look in `om-tutorial.core` you'll see an alternate tempid migration function that doesn't need id-key
   and doesn't throw out potential cached app state.
 
+  [Next: Remote Mutation](#!/om_tutorial.H_Remote_Mutation)
   ")
 
 
