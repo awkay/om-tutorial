@@ -66,4 +66,5 @@
   - You MUST set `:id-key` on reconciler to the ID key used by the actual objects to be migrated, since the ident need
   not use that key (idents are a client-local concern)
 
+  [Next: Path Optimization](#!/om_tutorial.I_Path_Optimization)
   ")

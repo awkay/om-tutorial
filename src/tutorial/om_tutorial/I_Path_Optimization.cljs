@@ -22,5 +22,7 @@
   When it attempts this kind of read it will call your `read` function with `:query-root` set to the ident of the component that
   is needing re-render, and you will need to follow the query down from there. Fortunately, `db->tree` still works
   for the default database format with a little care.
+
+  [Next: Advanced Queries](#!/om_tutorial.J_Advanced_Queries)
   ")
 

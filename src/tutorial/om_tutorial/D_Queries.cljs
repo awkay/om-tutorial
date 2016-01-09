@@ -286,4 +286,6 @@
   (obviously) understand the basic bits of query syntax and retrieve data. It is insufficient
   for the full guts of a real application, but it is a wonderful helper that greatly simplifies
   the task.
+
+  [Next: State Reads and Parsing](#!/om_tutorial.E_State_Reads_and_Parsing)
   ")

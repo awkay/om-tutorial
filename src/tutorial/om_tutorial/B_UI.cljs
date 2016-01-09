@@ -220,4 +220,6 @@
   - Add parent-generated things (like callbacks) using `om/computed`.
 
   TODO: Add links to various docs
+
+  [Now let's try some exercises.](#!/om_tutorial.B_UI_Exercises)
   ")

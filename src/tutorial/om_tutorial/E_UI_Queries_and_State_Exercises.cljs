@@ -103,3 +103,6 @@ TODO: Split this into smaller bits.
    :widget     {:people [{:person/name "Joe" :db/id 1 :person/mate {:person/name "Sally" :db/id 2}}
                          {:person/name "Sally" :db/id 2 :person/mate {:person/name "Joe" :db/id 1}}]}}
   {:inspect-data true})
+
+(defcard-doc
+  "[Next: Mutation](#!/om_tutorial.F_Mutation)")

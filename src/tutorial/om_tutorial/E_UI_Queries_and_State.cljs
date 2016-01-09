@@ -186,4 +186,6 @@
   Sometimes you're just trying to clean up code and factor bits out. Don't feel like you have to wrap UI code in
   `defui` if it doesn't need any support from React or Om. Just write a function! `PeopleWidget` earlier in this
   document is a great example of this.
+
+  [Next: Exercises](#!/om_tutorial.E_UI_Queries_and_State_Exercises)
   ")

@@ -156,3 +156,6 @@
   if the state hasn't changed, then React will optimize away any actual DOM change.
   ")
 
+(defcard-doc
+  "[Next: Excercises](#!/om_tutorial.F_Mutation_Exercises)")
+

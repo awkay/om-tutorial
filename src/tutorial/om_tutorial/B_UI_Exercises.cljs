@@ -221,3 +221,5 @@
                          {:db/id 1 :person/name "Joe" :person/mate {:db/id 2 :person/name "Sally"}}
                          {:db/id 2 :person/name "Sally" :person/mate {:db/id 1 :person/name "Joe"}}]}}
   {:inspect-data true})
+
+(defcard-doc "[Next: App Database](#!/om_tutorial.C_App_Database)")

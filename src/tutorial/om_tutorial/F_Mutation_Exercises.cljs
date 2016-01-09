@@ -15,4 +15,5 @@
      - Demonstrate how top-level transactions become trivial when everything is in top-level tables
      - Show how many UI-specific mutation concerns can then be combined into a small set of functions
 
+  [Next: Remote Fetch](#!/om_tutorial.G_Remote_Fetch)
   ")
