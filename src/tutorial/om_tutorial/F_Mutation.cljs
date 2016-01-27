@@ -13,7 +13,7 @@
 
   ## Overview
 
-  Mutations are part of the query syntax, except they are invoked with `transact!` and dispath to your top-level
+  Mutations are part of the query syntax, except they are invoked with `transact!` and dispatch to your top-level
   mutation function instead of the read function. The mutations are meant to be thought of as top-level transactions
   which are abstract operations over your application state. The difference between a local mutation and a remote one is
   indistinguishable in the UI code itself. So, assume you want to be able to delete something in the UI, you might
@@ -92,7 +92,7 @@
                     4 { :id 4 :person/name \"May\" }}}
   ```
 
-  You'll need to simple do the data manipulations to make it look right. For example, to add \"Tom\" to your friends,
+  You'll simply need to do the data manipulations to make it look right. For example, to add \"Tom\" to your friends,
   your mutation action thunk would basically need to:
 
   ```

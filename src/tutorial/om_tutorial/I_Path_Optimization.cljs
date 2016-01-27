@@ -15,7 +15,7 @@
   of the UI.
 
   If you pass `:pathopt true` to the reconciler, then when re-rendering a component that has an Ident
-  Om will attempt to run the query starting from that component (using it's Ident as the root of the query).
+  Om will attempt to run the query starting from that component (using its Ident as the root of the query).
   If your parser returns a result, it will use it. If your parser returns `nil` then it will focus the root
   query to that component and run it from root.
 

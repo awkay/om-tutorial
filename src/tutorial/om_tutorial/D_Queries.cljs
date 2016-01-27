@@ -128,7 +128,7 @@
   ```
 
   one might expect that this is a *to one* join (and the corresponding database would have
-  single item at that location), resulting in:
+  a single item at that location), resulting in:
 
   ```
   { :modal-dialog {:message \"You screwed up!. Click OK to continue.\" } }
@@ -209,7 +209,7 @@
   ")
 
 (defcard ident-based-queries
-  "The database in this card contains various tables. Use idents in queries to experiement with this
+  "The database in this card contains various tables. Use idents in queries to experiment with this
   query feature. Note that even though you are querying by ident (which is a vector) you *still need*
   the containing vector (which is the top-level container for queries).
 
