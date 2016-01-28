@@ -5,7 +5,7 @@
                  [devcards "0.2.1-2" :exclusions [org.omcljs/om cljsjs/react-dom org.clojure/tools.reader cljsjs/react]]
                  [datascript "0.13.3"]
                  [org.omcljs/om "1.0.0-alpha26"]
-                 [figwheel-sidecar "0.5.0-2" :exclusions [clj-time joda-time org.clojure/tools.reader] :scope "test"]
+                 [figwheel-sidecar "0.5.0-3" :exclusions [clj-time joda-time org.clojure/tools.reader] :scope "test"]
                  [cljsjs/codemirror "5.8.0-0"]]
 
   :source-paths ["src/main" "src/cards" "src/tutorial"]
@@ -79,8 +79,11 @@
                                                        :file     "resources/public/codemirror/matchbrackets-min.js"}]}}]}
 
   :profiles {
-             :dev {:source-paths ["src/dev"]
+             :dev {:source-paths ["src/dev" "src/main" "src/tutorial"]
+                   :dependencies [[com.cemerick/piggieback "0.2.1"]
+                                  [org.clojure/tools.nrepl "0.2.12"]]
                    :repl-options {:init-ns user
+                                  :nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]
                                   :port    7001}
                    }
              }
