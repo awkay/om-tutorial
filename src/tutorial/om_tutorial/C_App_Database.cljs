@@ -35,7 +35,8 @@
   nearly free) until you consider what happens next: time passes. The data needs to update.
 
   In a mutable world, you'd just update the data in-place, and the pointers would now point
-  to that new state. If you're reading this you've already learned the perils and disadvantages of *that*.
+  to that new state. If you're reading this you've already learned about the perils and disadvantages of
+   *that*.
 
   So, now you have the lovely task of finding all of that data in the application state and updating
   it to the new data set to produce your new (immutable) application state. This turns a localized

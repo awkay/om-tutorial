@@ -167,7 +167,7 @@
   (initLocalState [this] { map-of-data-to-store })
   ```
 
-  in the Object setion of your UI. Then use `om/get-state`, `om/update-state!`, and `om/set-state!` to
+  in the Object section of your UI. Then use `om/get-state`, `om/update-state!`, and `om/set-state!` to
   work with the state.
 
   Add component local state to your Person class, and update the UI so that when
@@ -175,7 +175,7 @@
 
   The proper attributes for the checkbox input are `:checked` and `:onClick`.
 
-  To ensure you got the initial state right make it is the default that a person is checked.
+  To ensure you got the initial state right make sure it is the default that a person is checked.
   "
   (fn [state-atom _]
     (om-person @state-atom))

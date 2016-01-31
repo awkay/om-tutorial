@@ -69,7 +69,7 @@
 (defcard widget-card (widget {}))
 
 (defcard-doc
-  "Such components are known as \"stateless components\" in Om because they do not expliticly ask for data. Later,
+  "Such components are known as \"stateless components\" in Om because they do not explicitly ask for data. Later,
   when we learn about colocated queries, you'll see it is possible for a component to ask for the data it needs in
   a declarative fashion.
 

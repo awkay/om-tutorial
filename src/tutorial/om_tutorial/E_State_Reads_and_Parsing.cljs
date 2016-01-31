@@ -67,7 +67,7 @@
   In this case, the meaning is a bit of result data; thus, for Om to be able to generate a
   result from the parser, you must supply the \"read\" emitter.
 
-  First, let's see what an Om parser in action.
+  First, let's see an Om parser in action.
   ")
 
 (defcard om-parser
@@ -231,7 +231,7 @@ Try some queries like these:
 
   It must return a value that has the shape implied the grammar element being read.
 
-  So, lets try it out.
+  So, let's try it out.
   ")
 
 (defn read-42 [env key params] {:value 42})
@@ -250,7 +250,7 @@ Try some queries like these:
     nil) ;; no parameters
   ```
 
-  your read function should return some value that makes sense for
+  Your read function should return some value that makes sense for
   that spot in the grammar. There are no real restrictions on what that data
   value has to be in this case. You are reading a simple property.
   There is no further shape implied by the grammar.
@@ -321,7 +321,7 @@ Try some queries like these:
   "
   (dc/mkdn-pprint-source property-read)
   "
-  Just assumes the property will be in the top-level of the app state atom.
+  just assumes the property will be in the top-level of the app state atom.
   ")
 
 (defcard trivial-property-reader
@@ -395,10 +395,10 @@ Try some queries like these:
   "
 
   The first (possibly surprising thing) is that your result includes a nested
-  object. The parser creates the result, and the recusion natually nested the
+  object. The parser creates the result, and the recursion naturally nested the
   result correctly.
 
-  Next you should remember that join implies a there could be one OR many results.
+  Next you should remember that join implies there could be one OR many results.
   The singleton case is fine (e.g. putting a single map there). If there are
   multiple results it should be a vector.
 

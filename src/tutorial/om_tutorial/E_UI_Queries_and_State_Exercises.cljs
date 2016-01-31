@@ -86,7 +86,7 @@ TODO: Split this into smaller bits.
   - The interfaces for IQuery etc are declared `static`. This is not a cljs keyword, it is
   an invention of the macro. It causes the macro to place those things on the generated React class.
   - A `defui` component need not have a query. These are known as stateless components.
-  - If a component *has* a query, it must be it's own. Do not embed a query of another component as the full query
+  - If a component *has* a query, it must be its own. Do not embed a query of another component as the full query
   of another (you must at least use a join if this is what you want to do).
 
   Finish building out the suggested goal interface using Om components with co-located queries.

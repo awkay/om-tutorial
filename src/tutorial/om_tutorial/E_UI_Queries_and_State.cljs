@@ -14,7 +14,7 @@
   # UI, Queries, and State
 
   Now that you understand the database format, how you get data out of that database via
-  the queries, and how you build parser code you're ready to get some UI on the screen
+  the queries, and how you build parser code, you're ready to get some UI on the screen
   via all of those things.
 
   ## Co-located Queries on Components
@@ -74,7 +74,7 @@
   "
   So the thing to understand is that the query is used by Om to obtain data, but the data is just data, and
   the component itself doesn't care who provides it. In fact, as you'll see soon the root component of the UI
-  is given then entire UI data tree, and your UI code must pick it apart and pass it through the tree.
+  is given the entire UI data tree, and your UI code must pick it apart and pass it through the tree.
 
   The next thing to notice is that a query fragment often does not have enough context to actually go find real data.
   For example, in the person case we have yet to ask \"which people/person\" by placing this fragment somewhere in a join.
@@ -150,7 +150,7 @@
   the root! Basically the Root component ends up with one big fat query for the whole UI, but you get to
   *reason* about it through composition (recursive use of `get-query`). Also note that all of the data
   gets passed into the Root component, and every level of the UI that asked for (or composed in) data
-  must pick that apart and pass it down. In other words, you can pretend like you UI doesn't even have
+  must pick that apart and pass it down. In other words, you can pretend like your UI doesn't even have
   queries when working on your render functions. E.g. you can build your UI, pick apart a pretend
   result, then later add queries and everything should work.
 
@@ -166,7 +166,7 @@
   ```
 
   because they think \"this component just needs what the child needs\". If that is truly the case, then
-  Widget should not have a query at all (the parent should compose OtherWidget's into it's own query). The most common
+  Widget should not have a query at all (the parent should compose OtherWidget's into its own query). The most common
   location where this happens is at the root, where you may not want any specific data yourself.
 
   In that case, you *do* need a stateful component at the root, but you'll need to get the child data

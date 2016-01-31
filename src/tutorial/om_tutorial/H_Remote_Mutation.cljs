@@ -49,7 +49,7 @@
   + On the server, convert tempids to real IDs. Return a :tempids map from the server. Keys are tempid ident, the
    values are the new real ID idents.
   + Built-in migrate of Om should rewrite the tempids to the real ones automatically on callback, IF:
-    + The items returns are present in the UI query from root
+    + The items returned are present in the UI query from root.
     + The :id-key for the id on the object maps is set in reconciler.
 
   TODO: Finish this...notes:
@@ -58,13 +58,13 @@
   root components query and also has an Ident.
   - Since your UI components may use anything for an ident keyword, you must specify the real object ID keyword via
   the reconciler's config parameter `:id-key`.
-  - See `om-tutorial.om-specs` for working example
+  - See `om-tutorial.om-specs` for a working example.
   - Action method on server-side must be the thing that figures out the new ID (side-effect free). The return value
   of the action methods ends up as :result on parser return...you must post-process that or you'll send the wrong
   stuff to the client.
-  - See `simulated-server` for hints on how to fix up the results of mutation parses
+  - See `simulated-server` for hints on how to fix up the results of mutation parses.
   - You MUST set `:id-key` on reconciler to the ID key used by the actual objects to be migrated, since the ident need
-  not use that key (idents are a client-local concern)
+  not use that key (idents are a client-local concern).
 
   [Next: Path Optimization](#!/om_tutorial.I_Path_Optimization)
   ")
