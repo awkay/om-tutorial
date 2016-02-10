@@ -29,6 +29,8 @@ or at the command line with:
 lein run -m clojure.main script/figwheel.clj
 ```
 
+Using Emacs, just start up the repl with `cider-jack-in` (or connect to a running `lein repl`), and evaluate the contents of `script/figwheel.clj` in the repl. Similar steps should work find for fireplace in Vim.
+
 Then browse to the following URL:
 
 ```
