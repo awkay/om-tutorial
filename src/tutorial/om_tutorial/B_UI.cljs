@@ -209,6 +209,28 @@
   {:inspect-data true
    :history      true})
 
+(defui Styled-component
+  Object
+  (render [this]
+    (let [style (clj->js {:color "red"})]
+      (dom/div (clj->js {:style style}) "This text is red!"))))
+
+(def styled-component (om/factory Styled-component))
+
+(defcard-doc
+  "
+    ##Styling DOM elements
+
+    Styling can be applied to DOM elements through the JavaScript map passed to
+    them as second parameter.
+    The styling has to be a JavaScript map."
+
+  (dc/mkdn-pprint-source Styled-component))
+
+(defcard styling-example
+         (styled-component)
+         )
+
 (defcard-doc
   "
 
